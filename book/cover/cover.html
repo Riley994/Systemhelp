@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Team IQ — cover</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 100 900; src: url("../fonts/inter.ttf") format("truetype"); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 2560px; }
+  body {
+    font-family: "Inter", sans-serif;
+    background: #070B22;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* the field: a deep navy ground with a faint graph-paper grid and one amber glow */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .glow {
+    position: absolute; width: 1500px; height: 1500px; left: -420px; top: 700px;
+    background: radial-gradient(circle, rgba(239,172,35,.16) 0%, rgba(239,172,35,0) 62%);
+  }
+  .glow2 {
+    position: absolute; width: 1100px; height: 1100px; right: -460px; top: -300px;
+    background: radial-gradient(circle, rgba(17,56,149,.55) 0%, rgba(17,56,149,0) 65%);
+  }
+
+  /* the radar, echoing the scorecard: six axes, one team's shape */
+  .radar { position: absolute; right: -120px; bottom: 190px; width: 980px; height: 980px; opacity: .38; }
+
+  .frame { position: absolute; inset: 0; padding: 150px 130px 130px; display: flex; flex-direction: column; }
+
+  .mark { display: flex; align-items: center; gap: 26px; }
+  .mark svg { width: 78px; height: 78px; }
+  .mark span { font-size: 40px; font-weight: 600; letter-spacing: .22em; color: #fff; }
+  .mark span i { font-style: normal; color: #EFAC23; }
+
+  .title { margin-top: 250px; }
+  h1 { font-size: 232px; font-weight: 700; line-height: .92; letter-spacing: -.03em; }
+  h1 em { font-style: normal; color: #EFAC23; }
+  .rule { width: 240px; height: 10px; background: #EFAC23; margin: 64px 0 60px; }
+  h2 { font-size: 62px; font-weight: 400; line-height: 1.28; color: rgba(255,255,255,.9); max-width: 1120px; letter-spacing: -.01em; }
+
+  .spacer { flex: 1; }
+
+  .foot { display: flex; align-items: flex-end; justify-content: space-between; }
+  .author { font-size: 60px; font-weight: 600; letter-spacing: .01em; }
+  .author small { display: block; font-size: 30px; font-weight: 400; letter-spacing: .18em;
+                  color: rgba(255,255,255,.62); margin-bottom: 18px; text-transform: uppercase; }
+  .badge { text-align: right; font-size: 30px; line-height: 1.6; color: rgba(255,255,255,.72); }
+  .badge b { display: block; font-size: 30px; font-weight: 600; color: #EFAC23; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow2"></div>
+  <div class="glow"></div>
+
+  <svg class="radar" viewBox="0 0 400 400" aria-hidden="true">
+    <g fill="none" stroke="#FFFFFF" stroke-opacity="0.30" stroke-width="1.1">
+      <polygon points="200,40 338,120 338,280 200,360 62,280 62,120"/>
+      <polygon points="200,80 311,144 311,256 200,320 89,256 89,144"/>
+      <polygon points="200,120 284,168 284,232 200,280 116,232 116,168"/>
+      <line x1="200" y1="200" x2="200" y2="40"/><line x1="200" y1="200" x2="338" y2="120"/>
+      <line x1="200" y1="200" x2="338" y2="280"/><line x1="200" y1="200" x2="200" y2="360"/>
+      <line x1="200" y1="200" x2="62" y2="280"/><line x1="200" y1="200" x2="62" y2="120"/>
+    </g>
+    <polygon points="200,92 296,150 268,248 200,300 108,246 92,150"
+             fill="#EFAC23" fill-opacity="0.30" stroke="#EFAC23" stroke-width="2.4"/>
+    <g fill="#EFAC23">
+      <circle cx="200" cy="92" r="7"/><circle cx="296" cy="150" r="7"/><circle cx="268" cy="248" r="7"/>
+      <circle cx="200" cy="300" r="7"/><circle cx="108" cy="246" r="7"/><circle cx="92" cy="150" r="7"/>
+    </g>
+  </svg>
+
+  <div class="frame">
+    <div class="mark">
+      <svg viewBox="0 0 26 26" aria-hidden="true">
+        <circle cx="13" cy="3.4" r="2.7" fill="#FFFFFF"/><circle cx="21.3" cy="8.2" r="2.7" fill="#FFFFFF"/>
+        <circle cx="21.3" cy="17.8" r="2.7" fill="#EFAC23"/><circle cx="13" cy="22.6" r="2.7" fill="#FFFFFF"/>
+        <circle cx="4.7" cy="17.8" r="2.7" fill="#FFFFFF"/><circle cx="4.7" cy="8.2" r="2.7" fill="#FFFFFF"/>
+      </svg>
+      <span>TEAM<i>IQ</i></span>
+    </div>
+
+    <div class="title">
+      <h1>Why your best<br>people don't<br>make your<br><em>best teams.</em></h1>
+      <div class="rule"></div>
+      <h2>The six pillars of predictable high performance, and how to measure them.</h2>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="foot">
+      <div class="author">Andrew Phillips</div>
+      <div class="badge"><b>Six pillars · Fourteen instruments</b>Measured, not asserted</div>
+    </div>
+  </div>
+</body>
+</html>

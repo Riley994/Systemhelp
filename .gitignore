@@ -25,3 +25,6 @@ Thumbs.db
 !site/assets/downloads/
 # Cloudflare local development state (created by `wrangler dev`)
 .wrangler/
+
+# generated print body (rebuild with md2print.py)
+book/build/body*.typ

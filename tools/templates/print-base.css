@@ -1,0 +1,70 @@
+/* Shared styling for the printable PDF templates in tools/templates/.
+   These files generate the downloads; they are not part of the website. */
+
+@font-face { font-family: "Inter"; font-weight: 400; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 600; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-600.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 700; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-700.woff2") format("woff2"); }
+
+@page { size: A4; margin: 16mm 15mm 14mm; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  font-family: "Inter", sans-serif;
+  font-size: 9.6pt; line-height: 1.45; color: #333B4D;
+  background: #fff;
+}
+
+/* page furniture */
+.page { position: relative; padding-bottom: 6mm; break-after: page; }
+.page:last-of-type { break-after: auto; }
+.doc-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 2px solid #0A0F2C; padding-bottom: 5mm; margin-bottom: 6mm;
+}
+.doc-head .brand { display: flex; align-items: center; gap: 3mm; font-size: 14pt; font-weight: 600; letter-spacing: -.02em; color: #0A0F2C; }
+.doc-head .brand span span { color: #EFAC23; }
+.doc-head .meta { text-align: right; font-size: 8pt; color: #7A8494; line-height: 1.5; }
+.doc-head .meta b { color: #0A0F2C; }
+.foot {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  border-top: 1px solid #E1E6EE; padding-top: 2.5mm;
+  display: flex; justify-content: space-between; font-size: 7.6pt; color: #8A94A6;
+}
+
+/* type */
+h1 { font-size: 22pt; line-height: 1.1; letter-spacing: -.025em; color: #0A0F2C; font-weight: 600; margin-bottom: 3mm; }
+h2 { font-size: 12.5pt; letter-spacing: -.015em; color: #0A0F2C; font-weight: 600; margin: 6mm 0 2.5mm; }
+h3 { font-size: 10.5pt; letter-spacing: -.01em; color: #0A0F2C; font-weight: 600; margin: 4mm 0 1.5mm; }
+p { margin-bottom: 2.4mm; }
+.lead { font-size: 11pt; line-height: 1.45; color: #4A5468; }
+strong { color: #0A0F2C; font-weight: 600; }
+.eyebrow { font-size: 7.8pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #8A94A6; margin-bottom: 2mm; }
+.eyebrow b { color: #C98A0E; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: #7A8494; }
+.small { font-size: 8pt; }
+a { color: #113895; text-decoration: none; }
+
+/* layout */
+.row { display: flex; gap: 6mm; }
+.col { flex: 1; }
+.rule { height: 1px; background: #E1E6EE; margin: 5mm 0; border: 0; }
+.kpi-band { display: flex; gap: 5mm; margin: 5mm 0; }
+.kpi { flex: 1; border: 1px solid #E1E6EE; border-radius: 2mm; padding: 3.5mm; }
+.kpi .n { font-size: 19pt; font-weight: 600; letter-spacing: -.03em; color: #0A0F2C; line-height: 1; display: block; }
+.kpi .n.accent { color: #C98A0E; }
+.kpi .l { display: block; font-size: 8.2pt; color: #5A6472; margin-top: 1.5mm; line-height: 1.35; }
+.box { background: #F6F8FB; border-left: 3px solid #113895; padding: 4mm 4.5mm; margin: 4mm 0; }
+.box.accent { border-left-color: #EFAC23; }
+table { width: 100%; border-collapse: collapse; margin: 3mm 0 4mm; font-size: 8.8pt; }
+th { text-align: left; font-size: 7.6pt; letter-spacing: .1em; text-transform: uppercase; color: #8A94A6; border-bottom: 1px solid #E1E6EE; padding: 0 3mm 2mm 0; font-weight: 600; }
+td { padding: 2.4mm 3mm 2.4mm 0; border-bottom: 1px solid #EEF1F6; vertical-align: top; }
+td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; color: #0A0F2C; font-weight: 600; }
+ul, ol { margin: 0 0 2.5mm 4mm; }
+li { margin-bottom: 1.2mm; }
+.checklist { list-style: none; margin-left: 0; }
+.checklist li { padding-left: 5.5mm; position: relative; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 1.1mm; width: 3mm; height: 3mm; border: 1.4px solid #113895; border-radius: .6mm; }
+.stamp { display: inline-block; border: 1px solid #C7D2E8; border-radius: 999px; padding: 1mm 3mm; font-size: 7.4pt; letter-spacing: .1em; text-transform: uppercase; color: #7A8494; }
+.skip { color: #C0392B; font-weight: 600; }

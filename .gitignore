@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# build / tooling output
+tools/out/
+*.log
+npm-debug.log*
+
+# editors and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# keep the deployable site committed
+!site/
+!site/assets/
+!site/assets/downloads/

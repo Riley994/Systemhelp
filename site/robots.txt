@@ -1,0 +1,14 @@
+# TEAM IQ Creator — systemhelp.co.uk
+# Everything public is indexable. Thank-you pages, the API and the print
+# templates are not useful in search results and are excluded.
+
+User-agent: *
+Allow: /
+
+Disallow: /thank-you/
+Disallow: /api/
+Disallow: /404.html
+
+# Crawl-delay is not needed: this is a static site served from the edge.
+
+Sitemap: https://systemhelp.co.uk/sitemap.xml

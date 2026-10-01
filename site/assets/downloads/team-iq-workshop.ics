@@ -1,0 +1,48 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TEAM IQ Creator//Systemhelp Ltd//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:TEAM IQ monthly workshop
+X-WR-TIMEZONE:Europe/London
+X-WR-CALDESC:A free 60-minute live workshop covering one of the six TEAM IQ pillars each month.
+BEGIN:VTIMEZONE
+TZID:Europe/London
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0100
+TZNAME:BST
+DTSTART:19700329T010000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0000
+TZNAME:GMT
+DTSTART:19701025T020000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:teamiq-workshop-monthly@systemhelp.co.uk
+DTSTAMP:20261001T090000Z
+DTSTART;TZID=Europe/London:20261103T120000
+DTEND;TZID=Europe/London:20261103T130000
+RRULE:FREQ=MONTHLY;BYDAY=1TU;COUNT=24
+SUMMARY:TEAM IQ workshop — one pillar, one hour
+DESCRIPTION:A free 60-minute live workshop. Each month we take one of the six \
+ TEAM IQ pillars\, explain what it changes in practice\, and work through an \
+ exercise you can take back to your team. Register at \
+ https://systemhelp.co.uk/workshop/ to receive the joining link and the replay.
+LOCATION:Online — joining link sent on registration
+URL:https://systemhelp.co.uk/workshop/
+ORGANIZER;CN=Andrew Phillips:mailto:andrew@systemhelp.co.uk
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:TEAM IQ workshop starts in 30 minutes
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>TEAM IQ share image</title>
+<style>
+  @font-face { font-family: "Inter"; font-weight: 400; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-400.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 600; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-600.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 700; src: url("file:///home/ubuntu/teamiq/site/assets/fonts/inter-700.woff2") format("woff2"); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; font-family: "Inter", sans-serif;
+    background: #0A0F2C; color: #fff; overflow: hidden; position: relative;
+  }
+  .glow {
+    position: absolute; right: -160px; top: -140px; width: 780px; height: 780px;
+    background: radial-gradient(circle at 50% 50%, rgba(58,99,201,.55), rgba(10,15,44,0) 62%);
+  }
+  .dots { position: absolute; right: 96px; top: 150px; }
+  .wrap { position: relative; z-index: 2; padding: 68px 72px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+  .eyebrow { font-size: 17px; letter-spacing: .16em; text-transform: uppercase; color: #8A97B4; font-weight: 600; }
+  .eyebrow b { color: #EFAC23; }
+  h1 { font-size: 66px; line-height: 1.03; letter-spacing: -.03em; font-weight: 600; max-width: 15ch; }
+  .foot { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+  .brand span span { color: #EFAC23; }
+  .meta { font-size: 20px; color: #B9C4DA; }
+  .bar { width: 96px; height: 5px; background: #EFAC23; border-radius: 3px; margin-bottom: 26px; }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <svg class="dots" width="320" height="320" viewBox="0 0 34 34" aria-hidden="true">
+    <circle cx="17" cy="5" r="2.4" fill="#3A63C9"/>
+    <circle cx="27.4" cy="11" r="2.4" fill="#3A63C9"/>
+    <circle cx="27.4" cy="23" r="2.4" fill="#EFAC23"/>
+    <circle cx="17" cy="29" r="2.4" fill="#3A63C9"/>
+    <circle cx="6.6" cy="23" r="2.4" fill="#3A63C9"/>
+    <circle cx="6.6" cy="11" r="2.4" fill="#3A63C9"/>
+    <circle cx="17" cy="17" r="2.4" fill="#6E9BF5"/>
+  </svg>
+  <div class="wrap">
+    <div>
+      <div class="bar"></div>
+      <p class="eyebrow"><b>TEAM IQ</b> CREATOR</p>
+    </div>
+    <h1>Your transformation finished. The performance never arrived.</h1>
+    <div class="foot">
+      <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="3.4" r="2.7" fill="#FFFFFF"/><circle cx="21.3" cy="8.2" r="2.7" fill="#FFFFFF"/>
+          <circle cx="21.3" cy="17.8" r="2.7" fill="#EFAC23"/><circle cx="13" cy="22.6" r="2.7" fill="#FFFFFF"/>
+          <circle cx="4.7" cy="17.8" r="2.7" fill="#FFFFFF"/><circle cx="4.7" cy="8.2" r="2.7" fill="#FFFFFF"/>
+        </svg>
+        <span>TEAM <span>IQ</span></span>
+      </div>
+      <p class="meta">Six pillars · One measurement cycle · A score a board can see moving</p>
+    </div>
+  </div>
+</body>
+</html>

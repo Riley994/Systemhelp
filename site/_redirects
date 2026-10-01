@@ -1,0 +1,29 @@
+# Cloudflare Pages redirects
+# Preserves the search equity of the old systemhelp.co.uk structure by pointing
+# the old URLs at their new equivalents. Order matters: longest paths first.
+
+# Old page structure -> new structure
+/webinar/            /workshop/            301
+/webinar             /workshop/            301
+/tiq-community/      /programme/           301
+/tiq-community       /programme/           301
+/tiq-diagnostic/     /corporate-diagnostic/ 301
+/tiq-diagnostic      /corporate-diagnostic/ 301
+/pricing/            /pricing/             200
+
+# The old Systeme.io funnel thank-you pages
+/default-funnel-step-thank-you-page/*   /thank-you/diagnostic/  301
+/thank-you/*         /thank-you/diagnostic/ 200
+
+# Common variants people type
+/home                /                     301
+/index.html          /                     301
+/privacy             /privacy-policy/      301
+/terms-of-business   /terms/               301
+/cookie-policy       /cookies/             301
+/contact             /contact-page/        301
+/about               /about-us/            301
+/blog/*              /insights/            301
+
+# Anything else that looks like a missing page goes to the 404 page
+# (Cloudflare serves /404.html automatically for unmatched routes)

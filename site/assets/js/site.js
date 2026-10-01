@@ -174,6 +174,13 @@
       if (p < 1) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
+
+    // Safety net: requestAnimationFrame can be throttled or suspended (a
+    // background tab, some headless renderers, reduced-motion settings).
+    // Whatever happens, the real figure must end up on the page.
+    window.setTimeout(function () {
+      el.textContent = prefix + target.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + suffix;
+    }, duration + 250);
   }
 
   /* --------------------------------------------------------------- 4. FORMS */

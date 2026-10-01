@@ -120,6 +120,16 @@ li::marker { color: var(--muted); }
 .band--dark strong { color: var(--white); }
 .band--dark .eyebrow { color: #8A97B4; }
 .band--dark a { color: var(--white); }
+/* Buttons keep their own colours inside a dark band: without this the generic
+   dark-band link colour turns .btn--light into white text on white. */
+.band--dark a.btn--light { color: var(--brand); }
+.band--dark a.btn--light:hover { color: var(--brand-600); }
+.band--dark a.btn--primary { color: #fff; }
+.band--dark a.btn--accent { color: #24170A; }
+.band--dark a.btn--ghost { color: #fff; border-color: rgba(255, 255, 255, .32); }
+.band--dark a.btn--ghost:hover { color: #fff; background: rgba(255, 255, 255, .09); border-color: #fff; }
+.band--dark a.btn--quiet { color: var(--accent); border-bottom-color: rgba(239, 172, 35, .45); }
+.band--dark a.btn--quiet:hover { color: #fff; border-bottom-color: #fff; }
 .band--texture {
   background-color: var(--ink);
   background-image: url("/assets/img/band-contours.webp");
@@ -464,8 +474,10 @@ textarea { min-height: 130px; resize: vertical; }
 [hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
-  .reveal.is-in { opacity: 1; transform: none; }
+  /* Gated on html.js so that content is never left invisible if the script
+     fails to load or JavaScript is disabled. */
+  html.js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  html.js .reveal.is-in { opacity: 1; transform: none; }
 }
 
 /* 14. RESPONSIVE =========================================================== */

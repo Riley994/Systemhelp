@@ -62,6 +62,7 @@ functions/api/lead.js         ← the same endpoint as a Cloudflare Pages Functi
 
 tools/                        ← development only, never published
 ├── render-assets.mjs         ← regenerates the share image and the PDFs
+audit-contrast.py          ← measures every text colour against its real background
 └── templates/                ← the HTML that produces those PDFs
 
 Dockerfile                    ← only used by Manus container hosting

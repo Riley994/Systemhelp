@@ -95,7 +95,19 @@ All prices live in **`site/assets/js/config.js`** *and* in the page HTML. The co
 
 `config.js` → `contact.email`, `contact.phone`, `contact.company`. These fill every element marked `data-cfg="contact.email"` and every mailto link marked `data-cfg-href="contact.email@mailto"`.
 
-> Replace the placeholder phone number before publishing.
+Adding a value in `config.js` and a matching `<span data-cfg="contact.yourKey">` in a page is the whole mechanism. There is no build step and nothing to compile.
+
+### Company details (already set)
+
+| Field | Value | Where it appears |
+| --- | --- | --- |
+| Legal entity | Network Advansys Limited | Footer of every page, terms, privacy policy, structured data |
+| Trading names | Systemhelp, TEAM IQ Creator | Footer, terms, privacy policy |
+| Company number | 3503850 | Footer, terms, privacy policy, cookies, contact page |
+| Registered office | 49 Station Road, Polegate, East Sussex, England, BN26 6EA | Footer, terms, privacy policy, cookies, contact page |
+| Phone | 07388 878732 | Contact page; the `tel:` link uses `+447388878732` so it works from abroad |
+
+All of these come from `config.js`, so a change of address, number or trading name is a one-line edit.
 
 ### Text, headings and images
 
@@ -172,17 +184,16 @@ This repository is also wired for Manus hosting: `build` publishes the static fi
 
 ## 7. What still needs doing before launch
 
-These are the deliberate placeholders, in priority order:
+In priority order:
 
-1. **Replace the placeholder phone number** in `site/assets/js/config.js`.
-2. **Confirm the portrait** used for Andrew on `/about-us/` (the file is `site/assets/img/team-andrew.webp`; there is an HTML comment marking it).
-3. **Add company details** to `/terms/` and `/privacy-policy/` — the company number and registered office are marked as `[COMPANY NUMBER]` and `[REGISTERED OFFICE ADDRESS]`.
-4. **Have a solicitor review** the privacy policy and terms of business. They are written in plain English and are honest, but they have not been legally reviewed.
-5. **Connect the booking calendar.** Set `booking.provider` and the URL in `config.js`; until then the site shows an email fallback.
-6. **Set the next workshop date** in `config.js` and update the calendar file in `site/assets/downloads/team-iq-workshop.ics`.
-7. **Add Stripe payment links** to `config.js` once the Stripe account is live.
-8. **Replace the three placeholder quotes** on `/results/` when your first cohort agrees to be named.
-9. **Publish the book** — the three free chapters need a real download once the manuscript is final.
+1. **Confirm the portrait** used for Andrew on `/about-us/` (the file is `site/assets/img/team-andrew.webp`; an HTML comment marks it). The name and role are confirmed — the photograph itself needs a check.
+2. **Have a solicitor review** the privacy policy and terms of business. They now carry the correct legal entity, company number and registered office, but they have not been legally reviewed.
+3. **Confirm the VAT registration number.** It is deliberately not on the site, because the site quotes prices excluding VAT rather than charging on the site. Add it to the terms and to your invoice template if you want it shown.
+4. **Connect the booking calendar.** Set the URL in `config.js` → `booking`; until then the page shows an email fallback.
+5. **Set the next workshop date** in `config.js` → `workshop.nextDate`, and in `site/assets/downloads/team-iq-workshop.ics`.
+6. **Add Stripe payment links** to `config.js` once the Stripe account is live.
+7. **Replace the three placeholder quotes** on `/results/` when your first cohort agrees to be named.
+8. **Publish the book** — the three free chapters need a real download once the manuscript is final.
 
 ---
 

@@ -48,7 +48,7 @@ I have added the two files that make your existing setup work. Nothing else chan
 4. Watch the log. A successful build ends with something like:
 
 ```
-✨ Read 91 files from the assets directory /home/ubuntu/teamiq/site
+✨ Read 91 files from the assets directory ./site
 Total Upload: 4.59 KiB / gzip: 1.76 KiB
 Uploaded systemhelp (x.x sec)
 Deployed systemhelp triggers (x.x sec)

@@ -105,6 +105,36 @@ web traffic, and the proxy setting does not apply to them.
 The two SRV records are the ones Cloudflare's scan most often misses. Check for
 them by name rather than by eye.
 
+### What Cloudflare's import gets wrong
+
+The scan brings in the right values but the wrong proxy status on seven records.
+It cannot tell web traffic from service records, and it assumes anything with a
+hostname is web traffic.
+
+**Delete these three.** They are Systeme.io's, and while they exist the Worker
+cannot claim the hostname — adding a custom domain fails with "a record with
+that host already exists".
+
+| Type | Name | Value |
+| --- | --- | --- |
+| A | `@` | `15.197.225.128` |
+| A | `@` | `3.33.251.168` |
+| CNAME | `www` | `d2zh1mbb6w7igb.cloudfront.net` |
+
+**Switch these four to DNS only.** The scan proxies them because they are
+CNAMEs, but none of them is a website. Proxied, Cloudflare answers with its own
+addresses, so Outlook and Teams resolve to the wrong place.
+
+| Type | Name | Value |
+| --- | --- | --- |
+| CNAME | `autodiscover` | `autodiscover.outlook.com` |
+| CNAME | `msoid` | `clientconfig.microsoftonline-p.net` |
+| CNAME | `sip` | `sipdir.online.lync.com` |
+| CNAME | `lyncdiscover` | `webdir.online.lync.com` |
+
+The DKIM, MX, TXT, SRV and `email` records are correctly DNS only as imported.
+Do not proxy any of them.
+
 **Do not** recreate the Systeme.io A and www CNAME records. Step 2 creates the
 correct ones.
 

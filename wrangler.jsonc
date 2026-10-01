@@ -1,0 +1,37 @@
+// ============================================================================
+// Cloudflare Workers configuration
+// ----------------------------------------------------------------------------
+// This is the file Cloudflare's Git integration reads when it runs
+// `npx wrangler deploy`. Without it the build fails with
+// "Missing entry-point to Worker script or to assets directory".
+//
+// HOW IT WORKS
+//   • Everything in ./site is published as static files. That is the website.
+//   • worker/index.js only runs for /api/* requests, which is the form
+//     endpoint. Every other request is served straight from the static files,
+//     so images and pages do not consume Worker requests.
+//   • A request for a page that does not exist returns site/404.html.
+//
+// TO RENAME THE PROJECT, change "name" below. It must match the Worker name
+// in the Cloudflare dashboard, or Cloudflare will create a second Worker.
+//
+// COMMON SETTINGS YOU MIGHT CHANGE
+//   assets.directory        the folder published as the website
+//   assets.run_worker_first which paths skip the static files and hit the
+//                           Worker script. Remove it entirely to let the
+//                           static files take priority for every path.
+// ============================================================================
+{
+  "name": "systemhelp",
+  "compatibility_date": "2026-10-01",
+  "main": "worker/index.js",
+  "assets": {
+    "directory": "./site",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -162,19 +162,33 @@ Requires Chromium on the PATH. Edit the wording in `tools/templates/*.html`, re-
 
 ---
 
-## 6. Deploying to Cloudflare Pages
+## 6. Deploying to Cloudflare
 
-1. Push this repository to GitHub (it is already the project's canonical remote).
-2. In Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, and pick `Riley994/Systemhelp`.
-3. Build settings:
-   - **Framework preset:** None
-   - **Build command:** leave **empty**
-   - **Build output directory:** `site`
-4. Add the environment variables from section 4.
-5. Deploy. `site/_headers`, `site/_redirects` and `functions/api/lead.js` are picked up automatically.
-6. When you are ready, move the `systemhelp.co.uk` domain onto this Pages project: **Custom domains → Set up a domain**, then point DNS at Pages. Keep the old site live until the new one resolves.
+Cloudflare has two products that can host this site, and the repository now supports both. **Full instructions, testing commands and a troubleshooting table are in [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md).** In short:
 
-Because there is no build step, every deploy is a straight file copy and each one takes seconds.
+**Workers** — what the dashboard offers by default when you connect a Git repository. The deploy command is `npx wrangler deploy`, which reads `wrangler.jsonc`. Leave every setting at its default:
+
+| Setting | Value |
+| --- | --- |
+| Build command | None |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+
+`wrangler.jsonc` publishes `site/` as static files and sends `/api/*` to `worker/index.js`.
+
+**Pages** — fewer moving parts, and what the repository was shaped for. **Workers & Pages → Create → Pages → Connect to Git**, pick `Riley994/Systemhelp`, then:
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | None |
+| Build command | *(leave empty)* |
+| Build output directory | `site` |
+
+`site/_headers`, `site/_redirects` and `functions/api/lead.js` are then picked up automatically.
+
+Either way, because there is no build step, every deploy is a straight file copy and each one takes seconds. Add the environment variables from section 4 before the forms can deliver anywhere.
+
+When you are ready, move `systemhelp.co.uk` onto the project: **Settings → Domains**, then point DNS at Cloudflare. Keep the old site live until the new one resolves.
 
 ### Deploying on Manus instead (already configured)
 
@@ -220,3 +234,5 @@ The site is built to stay quick as you add to it:
 ---
 
 *Built and maintained with Manus. The site is ordinary HTML, CSS and JavaScript — any web developer can pick it up without a handover document longer than this one.*
+worker/index.js               ← the same endpoint, wired for Cloudflare Workers
+wrangler.jsonc                ← Cloudflare Workers deploy settings (site + /api/*)

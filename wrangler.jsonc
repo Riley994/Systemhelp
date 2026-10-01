@@ -31,6 +31,23 @@
     "not_found_handling": "404-page",
     "run_worker_first": ["/api/*"]
   },
+  // --------------------------------------------------------------------------
+  // THE CUSTOM DOMAIN
+  // Once systemhelp.co.uk exists as a zone in your Cloudflare account, delete
+  // the "//" markers below and the next deploy claims both hostnames for this
+  // Worker, creating the DNS records and the certificate for you.
+  //
+  // Leave it commented until then: a route for a domain that is not in the
+  // account makes `wrangler deploy` fail, which would break the Git build.
+  //
+  // The dashboard route is Workers & Pages > systemhelp > Settings >
+  // Domains & Routes > Add > Custom domain, if you would rather click it.
+  // See docs/move-domain-to-cloudflare.md.
+  // --------------------------------------------------------------------------
+  // "routes": [
+  //   { "pattern": "systemhelp.co.uk",     "custom_domain": true },
+  //   { "pattern": "www.systemhelp.co.uk", "custom_domain": true }
+  // ],
   "observability": {
     "enabled": true
   }

@@ -23,6 +23,13 @@
   --brand-100:  #E8EEFB;
   --accent:     #EFAC23;
   --accent-600: #C98A0E;
+  /* The action colour: burnt orange, for the primary button only. Deliberately
+     distinct from the amber accent above — the accent marks small things, this
+     carries the main call to action. Both steps keep white text at or above
+     the WCAG AA contrast ratio, and the button stays visible against the dark
+     navy bands. */
+  --cta:        #B03D09;   /* 6.0:1 with white text */
+  --cta-hover:  #C2410C;   /* 5.2:1 with white text, and visibly lighter */
   --body:       #5A6472;
   --muted:      #7A8494;
   --surface:    #F6F8FB;
@@ -172,12 +179,16 @@ li::marker { color: var(--muted); }
 .brand__name { font-size: 1.0625rem; }
 .brand__name span { color: var(--brand); }
 .nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-.nav a {
+/* ":not(.btn)" matters. ".nav a" is more specific than ".btn--primary", so
+   without it the nav's own call to action lost both its colour and its shape:
+   black text on a navy button, a squarer corner, tighter padding, and a
+   near-white background on hover that made the white text disappear. */
+.nav a:not(.btn) {
   display: inline-block; padding: .55rem .7rem; border-radius: 8px;
   color: var(--ink); text-decoration: none; font-size: .9375rem; font-weight: 500;
 }
-.nav a:hover { background: var(--surface); }
-.nav a[aria-current="page"] { color: var(--brand); }
+.nav a:not(.btn):hover { background: var(--surface); }
+.nav a:not(.btn)[aria-current="page"] { color: var(--brand); }
 .nav__cta { margin-left: 8px; }
 .nav__group { position: relative; }
 .nav__group > button {
@@ -224,8 +235,8 @@ li::marker { color: var(--muted); }
 }
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
-.btn--primary { background: var(--brand); color: #fff; }
-.btn--primary:hover { background: var(--brand-600); color: #fff; }
+.btn--primary { background: var(--cta); color: #fff; }
+.btn--primary:hover { background: var(--cta-hover); color: #fff; }
 .btn--ghost { background: transparent; color: var(--ink); border-color: var(--hairline); }
 .btn--ghost:hover { border-color: var(--ink); background: #fff; }
 .btn--light { background: #fff; color: var(--brand); }
@@ -513,11 +524,11 @@ textarea { min-height: 130px; resize: vertical; }
     box-shadow: var(--shadow); display: none; max-height: calc(100vh - 72px); overflow-y: auto;
   }
   .header[data-nav-open="true"] .nav { display: flex; }
-  .nav a, .nav__group > button { padding: .8rem .6rem; width: 100%; justify-content: space-between; font-size: 1rem; }
+  .nav a:not(.btn), .nav__group > button { padding: .8rem .6rem; width: 100%; justify-content: space-between; font-size: 1rem; }
   .nav__group { width: 100%; }
   .nav__menu { position: static; display: block; border: 0; box-shadow: none; padding: 0 0 0 12px; }
   .nav__group[data-open="false"] .nav__menu { display: none; }
-  .nav__cta { margin: 10px 0 0; }
+  .nav__cta { margin: 10px 0 0; width: 100%; justify-content: center; }
   .burger { display: block; }
   .formgrid { grid-template-columns: minmax(0, 1fr); }
   .scale { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }

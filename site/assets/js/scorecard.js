@@ -171,12 +171,30 @@
     initResultForm();
   }
 
-  function radarMarkup(pillars) {
-    // pillars arrive sorted by score; use a fixed order for the shape
-    var ordered = PILLARS.map(function (p) {
+  /* The six labels sit outside the hexagon. "ACCOUNTABILITY" is fourteen
+     characters wide, which is roughly a third of the chart, so a long label
+     anchored at the left or right edge runs past the edge of the SVG and is
+     clipped. The fix is to put the two longest names on the vertical axes —
+     where the text is centred and only needs room above and below — and the
+     shorter names on the diagonals where they are offset by half the radius.
+     The canvas is also wider than it is tall, because this chart is read in
+     words, not in shape. */
+  function radarOrder(pillars) {
+    var byLength = PILLARS.map(function (p) {
       return pillars.filter(function (x) { return x.key === p.key; })[0];
-    });
-    var cx = 150, cy = 150, r = 104;
+    }).sort(function (a, b) { return b.name.length - a.name.length; });
+    // longest to the top, second longest to the bottom, then right, left,
+    // right, left — reading clockwise from the top
+    var slots = [0, 3, 1, 4, 2, 5];
+    var out = [];
+    slots.forEach(function (slot, i) { out[slot] = byLength[i]; });
+    return out;
+  }
+
+  function radarMarkup(pillars) {
+    // pillars arrive sorted by score; the chart uses its own fixed order
+    var ordered = radarOrder(pillars);
+    var cx = 250, cy = 150, r = 100, ring = r + 20;
     var points = ordered.map(function (p, i) {
       var a = (Math.PI * 2 * i) / 6 - Math.PI / 2;
       var v = r * (p.score / 100);
@@ -196,16 +214,16 @@
     }).join("");
     var labels = ordered.map(function (p, i) {
       var a = (Math.PI * 2 * i) / 6 - Math.PI / 2;
-      var lx = cx + (r + 26) * Math.cos(a), ly = cy + (r + 26) * Math.sin(a);
+      var lx = cx + ring * Math.cos(a), ly = cy + ring * Math.sin(a);
       var anchor = Math.abs(Math.cos(a)) < 0.2 ? "middle" : (Math.cos(a) > 0 ? "start" : "end");
       var weakest = p.key === pillars[0].key;
       return '<text x="' + lx.toFixed(0) + '" y="' + (ly + 4).toFixed(0) + '" text-anchor="' + anchor + '" ' +
-        'font-size="10" font-weight="600" letter-spacing="0.08em" fill="' + (weakest ? "#C98A0E" : "#5A6472") + '">' + p.name + "</text>";
+        'font-size="11" font-weight="600" letter-spacing="0.06em" fill="' + (weakest ? "#C98A0E" : "#5A6472") + '">' + p.name + "</text>";
     }).join("");
     var shape = '<polygon points="' + points.map(function (pt) { return pt[0].toFixed(1) + "," + pt[1].toFixed(1); }).join(" ") + '" ' +
       'fill="rgba(17,56,149,0.14)" stroke="#113895" stroke-width="2"/>';
     var dots = points.map(function (pt) { return '<circle cx="' + pt[0].toFixed(1) + '" cy="' + pt[1].toFixed(1) + '" r="3" fill="#113895"/>'; }).join("");
-    return '<svg class="radar" viewBox="0 0 300 300" role="img" aria-label="Six pillar radar chart">' +
+    return '<svg class="radar" viewBox="0 0 500 300" role="img" aria-label="Six pillar radar chart">' +
       rings + axes + shape + dots + labels + "</svg>";
   }
 
@@ -226,7 +244,7 @@
         "<div>" +
           '<p class="eyebrow"><span class="eyebrow__num">RESULT</span> Your Team IQ Score</p>' +
           '<h2 class="visually-hidden">Your Team IQ Score</h2>' +
-          '<p class="result__score num" aria-live="polite">' + s.total + '<span class="result__of"> / 100</span></p>' +
+          '<p class="result__score num" aria-live="polite">' + s.total + '<span class="result__of">/ 100</span></p>' +
           '<p class="result__band">' + b.name + "</p>" +
           "<p class=\"lead\">" + b.text + "</p>" +
           "<p><strong>Strongest pillar:</strong> " + s.strongest.name + " (" + s.strongest.score + "/100). " +

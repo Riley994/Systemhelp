@@ -387,17 +387,25 @@ textarea { min-height: 130px; resize: vertical; }
 .scale__inner { display: block; border: 1px solid var(--hairline); border-radius: var(--r-input); padding: 14px 6px; background: #fff; height: 100%; transition: inherit; }
 .scale label:hover .scale__inner { border-color: var(--brand); }
 
-.result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 48px; align-items: start; }
-.result__score { font-size: clamp(4rem, 12vw, 7rem); font-weight: 600; line-height: .95; letter-spacing: -.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 48px; align-items: start; }
+/* The score and its "/ 100" share a baseline row with real space between
+   them, and "/ 100" is sized as a proportion of the number so the pairing
+   holds together at every screen width. */
+.result__score { display: flex; align-items: baseline; gap: .45rem; font-size: clamp(3.5rem, 11vw, 6.5rem); font-weight: 600; line-height: .95; letter-spacing: -.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .result__band { font-size: 1.25rem; font-weight: 600; color: var(--brand); letter-spacing: -.01em; }
-.result__of { font-size: 1.0625rem; color: var(--muted); }
+.result__of { font-size: .3em; font-weight: 500; letter-spacing: normal; color: var(--muted); white-space: nowrap; }
 .pillar-scores { list-style: none; padding: 0; margin: 0; }
-.pillar-scores li { display: grid; grid-template-columns: 130px minmax(0, 1fr) 44px; gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--hairline); font-size: .9375rem; }
+/* 150px rather than 130px: "ACCOUNTABILITY" is the longest pillar name and
+   at 130px it filled the column edge to edge, leaving no gap before the bar. */
+.pillar-scores li { display: grid; grid-template-columns: 150px minmax(0, 1fr) 44px; gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--hairline); font-size: .9375rem; }
 .pillar-scores .bar { height: 6px; background: var(--hairline); border-radius: 6px; overflow: hidden; }
 .pillar-scores .bar i { display: block; height: 100%; background: var(--brand); }
 .pillar-scores li[data-weakest="true"] .bar i { background: var(--accent); }
 .pillar-scores .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); }
-.radar { width: 100%; max-width: 340px; height: auto; margin-inline: auto; }
+/* The chart carries its six pillar names outside the hexagon, so it is wider
+   than it is tall and needs the room. overflow:visible is a safety net: a
+   longer pillar name in future would show rather than be silently cut. */
+.radar { width: 100%; max-width: 520px; height: auto; margin-inline: auto; overflow: visible; }
 
 /* 11. CALCULATOR =========================================================== */
 .calc { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 40px; align-items: start; }

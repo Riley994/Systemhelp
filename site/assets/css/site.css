@@ -23,6 +23,7 @@
   --brand-100:  #E8EEFB;
   --accent:     #EFAC23;
   --accent-600: #C98A0E;
+  --accent-ink: #A15F09;   /* amber for text on a light ground: 5.2:1 on white */
   /* The action colour: the brand amber, matching the accent used on the radar
      and for the orange text in the dark sections. Amber takes dark text,
      because white on this amber is only 1.8:1. */
@@ -30,7 +31,7 @@
   --cta-hover:  #F5BE4A;   /* a lighter step, so hover lifts rather than dims */
   --cta-ink:    #24170A;
   --body:       #5A6472;
-  --muted:      #7A8494;
+  --muted:      #667085;   /* 4.9:1 on white, 4.7:1 on the surface tint */
   --surface:    #F6F8FB;
   --hairline:   #E1E6EE;
   --white:      #FFFFFF;
@@ -110,7 +111,7 @@ li::marker { color: var(--muted); }
   font-size: var(--fs-eyebrow); font-weight: 600; letter-spacing: .13em;
   text-transform: uppercase; color: var(--muted); margin: 0 0 1rem;
 }
-.eyebrow__num { color: var(--accent-600); font-variant-numeric: tabular-nums; }
+.eyebrow__num { color: var(--accent-ink); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; }
 
@@ -150,6 +151,10 @@ li::marker { color: var(--muted); }
    near black on navy, 1.1:1. */
 .band--dark .card label, .band--dark .field label { color: #fff; }
 .band--dark .card .hint, .band--dark .card .form__note, .band--dark .card .muted { color: #9AA6C2; }
+/* Some dark sections carry a bare form rather than one wrapped in a .card.
+   Scoped to form so the light booking panel inside a dark section, which has
+   no form in it, keeps its dark text. */
+.band--dark form .hint, .band--dark form .form__note, .band--dark form .muted { color: #9AA6C2; }
 .band--dark .card .field__error { color: #FF9A85; }
 .band--dark .card .form__status { color: #6FD3A8; }
 .band--texture {
@@ -307,7 +312,7 @@ li::marker { color: var(--muted); }
   display: block; font-size: clamp(2rem, 4vw, 3rem); font-weight: 600; line-height: 1;
   letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums;
 }
-.metric__num--accent { color: var(--accent); }
+.metric__num--accent { color: var(--accent-ink); }
 .band--dark .metric__num { color: #fff; }
 .band--dark .metric__num--accent { color: var(--accent); }
 .metric__label { display: block; margin-top: .7rem; font-size: .9375rem; line-height: 1.45; }
@@ -450,7 +455,7 @@ textarea { min-height: 130px; resize: vertical; }
 .calc__row .input { padding: .55rem .6rem; text-align: right; font-variant-numeric: tabular-nums; }
 .calc__row .unit { position: absolute; }
 .calc__total { font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 600; letter-spacing: -.03em; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
-.calc__total--accent { color: var(--accent); }
+.calc__total--accent { color: var(--accent-ink); }
 .waterfall { list-style: none; padding: 0; margin: 28px 0 0; }
 .waterfall li { margin-bottom: 18px; }
 .waterfall .wf__top { display: flex; justify-content: space-between; gap: 16px; font-size: .9375rem; margin-bottom: .4rem; }
@@ -465,6 +470,19 @@ textarea { min-height: 130px; resize: vertical; }
 .hero { padding-block: clamp(56px, 8vw, 104px); position: relative; overflow: hidden; }
 .hero--dark { background: var(--ink); color: #B9C4DA; }
 .hero--dark h1 { color: #fff; }
+/* The dark hero needs the same treatment as a dark band. Without this the
+   global strong colour (strong, b { color: var(--ink) }) and the .lead colour
+   left near-black text on the dark ground: the workshop date measured 1.0:1. */
+.hero--dark strong, .hero--dark b { color: var(--white); }
+.hero--dark .eyebrow { color: #8A97B4; }
+.hero--dark .lead { color: #B9C4DA; }
+/* Amber goes back to the bright brand tone on a dark ground, and prices in a
+   dark card stop being ink on navy. */
+.hero--dark .eyebrow__num, .band--dark .eyebrow__num,
+.hero--dark .metric__num--accent, .band--dark .metric__num--accent,
+.hero--dark .calc__total--accent, .band--dark .calc__total--accent { color: var(--accent); }
+.hero--dark .card__price, .band--dark .card__price { color: var(--white); }
+.hero--dark .card__price small, .band--dark .card__price small { color: #9AA6C2; }
 .hero--image { background-color: var(--ink); background-image: url("/assets/img/hero-intelligence.webp"); background-size: cover; background-position: right center; }
 .hero__inner { max-width: 46rem; }
 .hero .lead { margin-bottom: 28px; }

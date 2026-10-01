@@ -218,7 +218,7 @@
       var anchor = Math.abs(Math.cos(a)) < 0.2 ? "middle" : (Math.cos(a) > 0 ? "start" : "end");
       var weakest = p.key === pillars[0].key;
       return '<text x="' + lx.toFixed(0) + '" y="' + (ly + 4).toFixed(0) + '" text-anchor="' + anchor + '" ' +
-        'font-size="11" font-weight="600" letter-spacing="0.06em" fill="' + (weakest ? "#C98A0E" : "#5A6472") + '">' + p.name + "</text>";
+        'font-size="11" font-weight="600" letter-spacing="0.06em" fill="' + (weakest ? "#A15F09" : "#5A6472") + '">' + p.name + "</text>";
     }).join("");
     var shape = '<polygon points="' + points.map(function (pt) { return pt[0].toFixed(1) + "," + pt[1].toFixed(1); }).join(" ") + '" ' +
       'fill="rgba(17,56,149,0.14)" stroke="#113895" stroke-width="2"/>';

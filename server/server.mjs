@@ -189,11 +189,20 @@ async function serveStatic(req, res) {
 
   const body = await readFile(filePath);
   const ext = extname(filePath).toLowerCase();
-  const immutable = /\.(woff2|png|jpe?g|webp|avif|svg|pdf|ico)$/.test(filePath);
+  // Nothing here is fingerprinted, because there is no build step. Only the
+  // fonts can be cached long-term; code, pages and documents must be able to
+  // change the moment a file is edited, so they revalidate on every request.
+  // Images get an hour, which a hard refresh clears.
+  const revalidate = [".html", ".json", ".css", ".js", ".mjs", ".pdf", ".xml", ".txt"].includes(ext);
+  const cacheControl = revalidate
+    ? "no-cache"
+    : ext === ".woff2"
+      ? "public, max-age=31536000, immutable"
+      : "public, max-age=3600";
   res.writeHead(200, {
     "Content-Type": TYPES[ext] || "application/octet-stream",
     "Content-Length": body.length,
-    "Cache-Control": ext === ".html" || ext === ".json" ? "no-cache" : (immutable ? "public, max-age=31536000, immutable" : "public, max-age=3600"),
+    "Cache-Control": cacheControl,
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin"
   });

@@ -1,39 +1,54 @@
-# Cloudflare Pages headers
-# This file is only used by Cloudflare. The Node server (server/server.mjs)
-# sets its own equivalents for Manus hosting.
-
+# Cloudflare headers
+# Used by Cloudflare Pages and by Cloudflare Workers static assets. The Node
+# server (server/server.mjs) sets its own equivalents for Manus hosting.
+#
+# A NOTE ON CACHING
+# This site has no build step, so nothing is fingerprinted: the stylesheet is
+# always /assets/css/site.css, never site.a1b2c3.css. Marking a file like that
+# "immutable" for a year would mean a corrected stylesheet never reaching a
+# returning visitor. So anything that can be edited is revalidated instead.
+# Revalidation is cheap: the browser sends a conditional request and gets a 304
+# with no body.
+#
+# If you ever add a build step that hashes filenames, the hashed files can
+# safely move back to long-lived immutable caching.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://js.stripe.com; frame-src https://js.stripe.com https://buy.stripe.com https://api.leadconnectorhq.com https://api.zoom.us; connect-src 'self' https://api.stripe.com https://*.leadconnectorhq.com; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
 
-# Long-lived immutable caching for versioned static assets
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-/manus-storage/*
+# Code and documents always revalidate, so your next edit is the next thing
+# anyone sees.
+/assets/css/*
+  Cache-Control: public, max-age=0, must-revalidate
+/assets/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+/assets/downloads/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Images: fresh for an hour, then revalidated. If you replace a photograph and
+# want to see it at once, use a hard refresh (Ctrl+Shift+R).
+/assets/img/*
+  Cache-Control: public, max-age=3600
+
+# Fonts are the only genuinely static files here, and the stylesheet is the only
+# thing that references them.
+/assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Fonts and images that never change content
-/*.svg
-  Cache-Control: public, max-age=604800
-/*.png
-  Cache-Control: public, max-age=604800
-/*.ico
-  Cache-Control: public, max-age=604800
-
-# HTML must always be revalidated so price and date changes appear immediately
+# Pages always revalidate so price and date changes appear immediately.
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /
   Cache-Control: public, max-age=0, must-revalidate
 
-# The redirects and robots files are configuration, not content
+# Configuration rather than content.
 /robots.txt
   Cache-Control: public, max-age=3600
 /sitemap.xml
   Cache-Control: public, max-age=3600
 
-# Security and privacy headers on the API
+# Never cache a form response.
 /api/*
   Cache-Control: no-store

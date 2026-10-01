@@ -23,13 +23,12 @@
   --brand-100:  #E8EEFB;
   --accent:     #EFAC23;
   --accent-600: #C98A0E;
-  /* The action colour: burnt orange, for the primary button only. Deliberately
-     distinct from the amber accent above — the accent marks small things, this
-     carries the main call to action. Both steps keep white text at or above
-     the WCAG AA contrast ratio, and the button stays visible against the dark
-     navy bands. */
-  --cta:        #B03D09;   /* 6.0:1 with white text */
-  --cta-hover:  #C2410C;   /* 5.2:1 with white text, and visibly lighter */
+  /* The action colour: the brand amber, matching the accent used on the radar
+     and for the orange text in the dark sections. Amber takes dark text,
+     because white on this amber is only 1.8:1. */
+  --cta:        #EFAC23;
+  --cta-hover:  #F5BE4A;   /* a lighter step, so hover lifts rather than dims */
+  --cta-ink:    #24170A;
   --body:       #5A6472;
   --muted:      #7A8494;
   --surface:    #F6F8FB;
@@ -131,12 +130,28 @@ li::marker { color: var(--muted); }
    dark-band link colour turns .btn--light into white text on white. */
 .band--dark a.btn--light { color: var(--brand); }
 .band--dark a.btn--light:hover { color: var(--brand-600); }
-.band--dark a.btn--primary { color: #fff; }
+.band--dark a.btn--primary { color: var(--cta-ink); }
 .band--dark a.btn--accent { color: #24170A; }
 .band--dark a.btn--ghost { color: #fff; border-color: rgba(255, 255, 255, .32); }
 .band--dark a.btn--ghost:hover { color: #fff; background: rgba(255, 255, 255, .09); border-color: #fff; }
 .band--dark a.btn--quiet { color: var(--accent); border-bottom-color: rgba(239, 172, 35, .45); }
 .band--dark a.btn--quiet:hover { color: #fff; border-bottom-color: #fff; }
+
+/* The booking panel is a LIGHT panel sitting inside a dark section, so the
+   rules above — which assume a dark ground — are wrong inside it. Without
+   these its heading was white on pale grey (1.1:1) and its quiet link turned
+   white on hover against a near-white background, so it disappeared. */
+.booking-slot h1, .booking-slot h2, .booking-slot h3, .booking-slot h4 { color: var(--ink); }
+.booking-slot p { color: var(--body); }
+.band--dark .booking-slot a.btn--quiet { color: var(--brand); border-bottom-color: var(--brand-100); }
+.band--dark .booking-slot a.btn--quiet:hover { color: var(--brand-600); border-bottom-color: var(--brand); }
+
+/* Form labels inside a dark card were inheriting the light-band ink colour:
+   near black on navy, 1.1:1. */
+.band--dark .card label, .band--dark .field label { color: #fff; }
+.band--dark .card .hint, .band--dark .card .form__note, .band--dark .card .muted { color: #9AA6C2; }
+.band--dark .card .field__error { color: #FF9A85; }
+.band--dark .card .form__status { color: #6FD3A8; }
 .band--texture {
   background-color: var(--ink);
   background-image: url("/assets/img/band-contours.webp");
@@ -235,8 +250,11 @@ li::marker { color: var(--muted); }
 }
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
-.btn--primary { background: var(--cta); color: #fff; }
-.btn--primary:hover { background: var(--cta-hover); color: #fff; }
+/* Amber takes dark text, because white on amber is unreadable. It also needs a
+   hairline edge and a small shadow: an amber shape on a white page is only
+   1.9:1 against the page, under the 3:1 wanted for a control. */
+.btn--primary { background: var(--cta); color: var(--cta-ink); border-color: rgba(10, 15, 44, .14); box-shadow: 0 1px 2px rgba(10, 15, 44, .2); }
+.btn--primary:hover { background: var(--cta-hover); color: var(--cta-ink); box-shadow: 0 2px 7px rgba(10, 15, 44, .24); }
 .btn--ghost { background: transparent; color: var(--ink); border-color: var(--hairline); }
 .btn--ghost:hover { border-color: var(--ink); background: #fff; }
 .btn--light { background: #fff; color: var(--brand); }

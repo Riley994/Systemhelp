@@ -23,3 +23,5 @@ Thumbs.db
 !site/
 !site/assets/
 !site/assets/downloads/
+# Cloudflare local development state (created by `wrangler dev`)
+.wrangler/

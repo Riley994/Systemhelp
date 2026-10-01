@@ -207,7 +207,11 @@ In priority order:
 4. **Connect the booking calendar.** Set the URL in `config.js` → `booking`; until then the page shows an email fallback.
 5. **Set the next workshop date** in `config.js` → `workshop.nextDate`, and in `site/assets/downloads/team-iq-workshop.ics`.
 6. **Add Stripe payment links** to `config.js` once the Stripe account is live.
-7. **Replace the three placeholder quotes** on `/results/` when your first cohort agrees to be named.
+7. **Restore the quotes section on `/results/`** when your first cohort agrees in
+   writing to be named. It was removed on 1 October 2026 because three empty
+   spaces read as placeholders. The markup is in git history —
+   `git show 5a8902c:site/results/index.html` — and the sections after it will
+   need renumbering when it goes back.
 8. **Publish the book** — the three free chapters need a real download once the manuscript is final.
 
 ---

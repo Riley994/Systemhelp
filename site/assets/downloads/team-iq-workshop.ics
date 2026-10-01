@@ -1,11 +1,11 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//TEAM IQ Creator//Systemhelp Ltd//EN
+PRODID:-//TEAM IQ Creator//Network Advansys Limited//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:TEAM IQ monthly workshop
 X-WR-TIMEZONE:Europe/London
-X-WR-CALDESC:A free 60-minute live workshop covering one of the six TEAM IQ pillars each month.
+X-WR-CALDESC:A free 60-minute live workshop covering one of the six TEAM IQ pillars each month. Run by Network Advansys Limited, trading as Systemhelp.
 BEGIN:VTIMEZONE
 TZID:Europe/London
 BEGIN:DAYLIGHT
@@ -36,7 +36,7 @@ DESCRIPTION:A free 60-minute live workshop. Each month we take one of the six \
  https://systemhelp.co.uk/workshop/ to receive the joining link and the replay.
 LOCATION:Online — joining link sent on registration
 URL:https://systemhelp.co.uk/workshop/
-ORGANIZER;CN=Andrew Phillips:mailto:andrew@systemhelp.co.uk
+ORGANIZER;CN=Andrew Phillips (TEAM IQ Creator):mailto:andrew@systemhelp.co.uk
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 BEGIN:VALARM

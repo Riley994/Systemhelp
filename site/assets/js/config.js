@@ -23,9 +23,13 @@ window.TEAMIQ = {
      --------------------------------------------------------------------- */
   contact: {
     email: "andrew@systemhelp.co.uk",          // where enquiries are sent
-    phone: "",                                 // e.g. "+44 7700 900000" — blank hides it
-    company: "Systemhelp Ltd",
-    address: "United Kingdom",                 // e.g. "12 Example Street, Manchester M1 1AA"
+    phone: "07388 878732",
+    phoneIntl: "+447388878732",               // used for the tel: link, so it works from abroad
+    company: "Network Advansys Limited",       // the legal entity
+    tradingAs: "Systemhelp",                   // the trading name customers know
+    companyNumber: "3503850",
+    registeredOffice: "49 Station Road, Polegate, East Sussex, England, BN26 6EA",
+    address: "49 Station Road, Polegate, East Sussex, England, BN26 6EA",
     linkedin: ""                               // your LinkedIn profile URL
   },
 

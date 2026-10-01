@@ -39,18 +39,29 @@ An instrument in TEAM IQ is a working artefact: a card, board, log, threshold, c
 **7 C's Outcome Metrics (COM).** COM produces a quality scorecard with customer and business measures, supported by technical guardrails, data sources, owners, cadence and decision use. Use it for a released feature or service at the stated review points, including 7, 30 and 60 days where those fit the work. It replaces a technical dashboard used as the only account of quality, such as test coverage, defects or uptime without evidence of customer or business effect.
 
 ## References
+Entries marked **verified** were checked against the publication itself. Where a source is recorded without full publication details, that is stated rather than filled from another source.
 
-The evidence register supplied for this book does not contain full bibliographic records for every item it names. The entries below retain the organisation, title, year and publication information where that register provides it; an absence is marked rather than filled from another source.
+1. **Woolley, A. W., Chabris, C. F., Pentland, A., Hashmi, N., & Malone, T. W. (2010).** "Evidence for a Collective Intelligence Factor in the Performance of Human Groups." *Science*, 330(6004), 686–688. DOI 10.1126/science.1193147. *Verified.* Two studies with 699 people working in groups of two to five. The general collective-intelligence factor they identify is not strongly correlated with the average or maximum individual intelligence of group members, but is correlated with members' average social sensitivity, the equality of conversational turn-taking, and the proportion of women in the group.
 
-1. **Massachusetts Institute of Technology (MIT).** Collective-intelligence study of teams; formal article title and author list are not recorded in the evidence register. **2010.** Published in *Science*; the register describes a two-year study of 700 people.
-2. **Google.** Team-effectiveness research; formal report title is not recorded in the evidence register. The work is described as beginning in **2011** and running for four years. Publication venue is not recorded.
-3. **Inner Circle.** *UK wasting £37b a year on failed Agile IT projects.* Year is not recorded. Published online at `https://innercircle.com.au/uk-wasting-37b-a-year-on-failed-agile-it-projects/`.
-4. **Scrum Inc.** Source for the statement that 47% of Agile transformations fail. Title, year and publication venue are not recorded in the evidence register.
-5. **SAGE Journals.** Article at `https://journals.sagepub.com/doi/full/10.1177/14761270241271021`. Article title, authors and year are not recorded in the evidence register; publication venue is SAGE Journals.
-6. **Cynefin.** YouTube video at `https://www.youtube.com/watch?v=N7oz366X0-8`. Video title, year and publisher details are not recorded in the evidence register.
-7. **Snowden, Dave.** Harvard paper on Cynefin, as described in the evidence register. Title, year and precise publication venue are not recorded.
-8. **Moltke the Elder.** Statement on plans and the first encounter with an enemy's main strength, quoted in the evidence register. Source text, year and publisher are not recorded.
-9. **Tyson, Mike.** “Everyone has a plan until they get punched in the face”, quoted in the evidence register. Source, year and publication venue are not recorded.
+2. **Google (n.d.).** "Understand team effectiveness." *re:Work* guide, Project Aristotle. rework.withgoogle.com/en/guides/understanding-team-effectiveness. *Verified.* Five dynamics distinguish effective teams: psychological safety, dependability, structure and clarity, meaning, and impact. Psychological safety was the most important of the five. The research ran at Google from 2011 for about four years.
+
+3. **Katzenbach, J. R., & Smith, D. K. (1993).** "The Discipline of Teams." *Harvard Business Review*, 71(2), 111–120. *Verified.* A team is a small number of people with complementary skills, committed to a common purpose, a set of performance goals and an approach for which they hold themselves mutually accountable. The distinction between a team and a working group turns on performance. The authors' research covered hundreds of people in more than 50 teams across 30 companies.
+
+4. **Szatmari, B., Deichmann, D., & van den Ende, J. (2025).** "The increasing value of status in low-performing organizations: Evidence from the video game industry." *Strategic Organization*, 23(4), 604–629. Published online 2024. DOI 10.1177/14761270241271021. *Verified.* The relationship between a team's status and its performance is much stronger in organisations with low previous performance; where recent performance has been high, status has far less influence, because there is no expected resource scarcity pushing decision makers towards high-status teams.
+
+5. **Tovey, M. (ed.) (2008).** *Collective Intelligence: Creating a Prosperous World at Peace.* Oakton, Virginia: Earth Intelligence Network. Foreword by Yochai Benkler. *Verified.* An edited collection on collective intelligence; a general source for the field rather than the source of any figure in this book.
+
+6. **Inner Circle.** *UK wasting £37b a year on failed Agile IT projects.* innercircle.com.au/uk-wasting-37b-a-year-on-failed-agile-it-projects/. The year is not recorded in the evidence register, and the publisher's page returned no content when checked, so the figure rests on the secondary source that cites it.
+
+7. **Scrum Inc.** Source for the statement that 47% of Agile transformations fail. The title, year and publication venue are not recorded in the evidence register.
+
+8. **Cynefin.** Video at youtube.com/watch?v=N7oz366X0-8. The title, year and publisher details are not recorded in the evidence register.
+
+9. **Snowden, D.** Paper on Cynefin described in the evidence register as a Harvard publication. The title, year and precise venue are not recorded.
+
+10. **Moltke the Elder.** The observation that no plan survives first contact with the enemy, quoted in the evidence register. The source text, year and publisher are not recorded.
+
+11. **Tyson, M.** "Everyone has a plan until they get punched in the face", quoted in the evidence register. The source, year and venue are not recorded.
 
 ## About the author
 

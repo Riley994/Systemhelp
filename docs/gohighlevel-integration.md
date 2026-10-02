@@ -9,7 +9,7 @@ paste into Cloudflare, and how to prove it works.
 visitor submits a form
         │
         ▼
-POST /api/lead                      functions/api/lead.js  (shared by Worker and Pages)
+POST /api/lead                      functions/api/lead.js  (a Cloudflare Pages Function)
         │  validate, honeypot, timing trap
         ▼
 shared/lead-delivery.js             one place, used by Cloudflare and by the local server
@@ -63,9 +63,9 @@ It is also listed against each sub-account in the agency view. Keep it to hand f
 
 ## Step 3 — put both into Cloudflare
 
-The site runs as a Worker, so the variables belong to the Worker:
+The site is published by Cloudflare Pages, so the variables belong to the Pages project:
 
-**Workers & Pages → systemhelp → Settings → Variables and Secrets**
+**Workers & Pages → systemhelp (the Pages project) → Settings → Environment variables**
 
 | Name | Type | Value |
 | --- | --- | --- |
@@ -73,15 +73,17 @@ The site runs as a Worker, so the variables belong to the Worker:
 | `GHL_LOCATION_ID` | Text | the id from step 1 |
 | `RESEND_API_KEY` | Secret (encrypt) | optional, the safety-net email |
 
-Save, then apply the change if the dashboard asks you to deploy. These values live with the Worker
-and survive future Git builds — you set them once.
+Add each variable **twice — once under Production and once under Preview** — because the dashboard
+keeps those environments separate, and a variable set only for Preview is not visible to the live
+site. Then **Deployments → Retry deployment**. Environment variables are read when a deployment is
+built, so they only take effect on the next one. They survive future Git builds: you set them once.
 
 If you would rather do it from a terminal, from a clone of the repository with your Cloudflare
 login:
 
 ```sh
-npx wrangler secret put GHL_TOKEN
-npx wrangler secret put RESEND_API_KEY
+npx wrangler pages secret put GHL_TOKEN --project-name systemhelp
+npx wrangler pages secret put RESEND_API_KEY --project-name systemhelp
 ```
 
 `GHL_LOCATION_ID` is not sensitive, so it can go in the same dashboard page as plain text.
@@ -165,7 +167,7 @@ If you would rather not hold a token at all, set `CRM_WEBHOOK_URL` to a GoHighLe
 instead:
 
 1. **Automation → Workflows → Create Workflow → Add Trigger → Inbound Webhook**
-2. Copy the webhook URL, and set it as `CRM_WEBHOOK_URL` in the Worker.
+2. Copy the webhook URL, and set it as `CRM_WEBHOOK_URL` on the Pages project.
 3. In that workflow, add an action to **Create/Update Contact** and map the incoming fields.
 
 One thing to know before choosing this route: an inbound webhook trigger does **not** create a
@@ -224,3 +226,10 @@ buttons everywhere else. That single change replaces every "book a call" placeho
 - Never commit the token. It belongs in Cloudflare's secret store, not in the repository — the
   repository is public.
 - Grant only Contacts write and read. If the token leaks, that is the entire blast radius.
+
+Until these exist, every submission is accepted and delivered nowhere. The endpoint answers
+`"skipped"` for each destination, which is what the live site does today: the visitor sees the
+thank-you message, and no lead reaches GoHighLevel or your inbox.
+- **Cloudflare:** `npx wrangler pages deployment tail --project-name systemhelp`, or the deployment's
+  log view in the dashboard. The tail is the quickest way to watch a submission arrive and see which
+  destination it reached.

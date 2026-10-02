@@ -5,8 +5,8 @@
    copy of the lead logic in the repository:
 
      Cloudflare Pages     this file is a Pages Function
-     Cloudflare Workers   worker/index.js imports it (that is how this site is
-                          deployed) and routes /api/* to it
+     Node, locally        server/server.mjs implements the same route and calls
+                          the same shared/lead-delivery.js
 
    It validates the submission and hands delivery to shared/lead-delivery.js,
    which the local Node server uses as well. Delivery destinations:
@@ -16,7 +16,7 @@
      3. Owner notification email    RESEND_API_KEY
 
    Where to set them on Cloudflare:
-     Workers & Pages → systemhelp → Settings → Variables and Secrets
+     Workers & Pages → systemhelp → Settings → Environment variables
 
    Full setup instructions, including how to create the GoHighLevel token:
      docs/gohighlevel-integration.md
@@ -48,7 +48,11 @@ export async function onRequestPost({ request, env }) {
   // bot traps: a filled honeypot, or a form completed impossibly fast
   if (clean(data.website)) return json({ ok: true, note: "ignored" });
   const submittedAt = Date.parse(data.submittedAt || "");
-  if (Number.isFinite(submittedAt) && Date.now() - submittedAt < 2000) {
+  // Only a small *non-negative* elapsed time is a trap. A timestamp in the
+  // future means the visitor's clock is ahead, not that a bot filled the form,
+  // and silently dropping a real lead is far worse than letting one bot in.
+  const elapsed = Date.now() - submittedAt;
+  if (Number.isFinite(submittedAt) && elapsed >= 0 && elapsed < 2000) {
     return json({ ok: true, note: "ignored" });
   }
 

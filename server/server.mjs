@@ -21,7 +21,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { deliverLead } from "../shared/lead-delivery.js";
+import { onRequestPost } from "../functions/api/lead.js";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..", "site");
 const PORT = Number(process.env.PORT || 3000);
@@ -70,52 +70,37 @@ async function readBody(req, limit = 64 * 1024) {
 }
 
 const clean = (v, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
-const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-
 /* ------------------------------------------------------------------- lead */
+// Validation, the bot traps and delivery live in exactly one place: the Pages
+// Function in functions/api/lead.js, which shared/lead-delivery.js then sends
+// onward. It is handed a standard Request and env object here — precisely what
+// Cloudflare hands it — so local behaviour cannot drift from production. Before
+// this, the two copies had already diverged over the bot trap.
 async function handleLead(req, res) {
-  let data;
+  let body;
   try {
-    const raw = await readBody(req);
-    data = raw ? JSON.parse(raw) : {};
+    body = await readBody(req);
   } catch {
-    return json(res, 400, { ok: false, error: "bad_request" });
+    return json(res, 413, { ok: false, error: "payload_too_large" });
   }
 
-  // bot traps: honeypot field, or a form completed impossibly fast
-  if (clean(data.website)) return json(res, 200, { ok: true, note: "ignored" });
-  const submittedAt = Date.parse(data.submittedAt || "");
-  if (Number.isFinite(submittedAt) && Date.now() - submittedAt < 2000) {
-    return json(res, 200, { ok: true, note: "ignored" });
-  }
+  const request = new Request("http://localhost/api/lead", {
+    method: "POST",
+    headers: {
+      "Content-Type": req.headers["content-type"] || "application/json",
+      "User-Agent": req.headers["user-agent"] || ""
+    },
+    body
+  });
 
-  const lead = {
-    form: clean(data.form, 40) || "enquiry",
-    name: clean(data.name, 120),
-    email: clean(data.email, 180),
-    company: clean(data.company, 160),
-    role: clean(data.role, 120),
-    teamSize: clean(data.team_size, 40),
-    phone: clean(data.phone, 40),
-    interest: clean(data.interest, 120),
-    message: clean(data.message, 4000),
-    score: clean(data.score, 10),
-    weakestPillar: clean(data.weakest_pillar, 40),
-    pillarScores: clean(data.pillar_scores, 400),
-    page: clean(data.page, 200),
-    receivedAt: new Date().toISOString(),
-    userAgent: clean(req.headers["user-agent"], 200)
-  };
-
-  const problems = [];
-  if (!lead.name) problems.push("name");
-  if (!isEmail(lead.email)) problems.push("email");
-  if (problems.length) return json(res, 400, { ok: false, error: "invalid_fields", fields: problems });
-
-  // Never fail the visitor's submission because a downstream service is down:
-  // deliverLead logs the lead when nothing got through.
-  const delivered = await deliverLead(lead, process.env);
-  return json(res, 200, { ok: true, delivered });
+  const response = await onRequestPost({ request, env: process.env });
+  const payload = await response.text();
+  res.writeHead(response.status, {
+    "Content-Type": response.headers.get("content-type") || "application/json; charset=utf-8",
+    "Content-Length": Buffer.byteLength(payload),
+    "Cache-Control": "no-store"
+  });
+  res.end(payload);
 }
 
 /* ----------------------------------------------------------------- static */

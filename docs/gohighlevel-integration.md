@@ -190,14 +190,46 @@ Add `RESEND_API_KEY` and every lead is emailed to you at the same moment it reac
 Two independent destinations: if one breaks, the other still carries the enquiry, so a broken
 integration becomes a duplicate rather than a lost lead.
 
-1. Create an account at [resend.com](https://resend.com). The free tier covers 3,000 emails a month.
-2. **Domains → Add domain → `systemhelp.co.uk`**, then add the DNS records it shows in Cloudflare.
-   Resend sends from a subdomain (`send.systemhelp.co.uk`), so this does **not** touch the MX records
-   that deliver your own mail. Do not change those.
-3. Wait until the domain reads **Verified** — sends from an unverified domain are refused.
-4. **API Keys → Create API key** with sending permission, and copy the `re_…` value. It is shown once.
-5. In Cloudflare, add it as `RESEND_API_KEY` (Secret), under **Production and Preview**, then
-   **Deployments → Retry deployment**.
+1. **Sign up at [resend.com](https://resend.com)** — the free tier covers 3,000 emails a month, 100 a
+   day. The address you sign up with is only your login and billing identity. It has nothing to do
+   with the sending domain or with where leads are emailed, so any address you actually read is fine.
+2. **Add the domain: Domains → Add domain → `systemhelp.co.uk`.** Resend sends from the subdomain
+   `send.systemhelp.co.uk`, so this does **not** touch the MX records that deliver your own mail.
+3. **Add the records it lists, in Cloudflare DNS** — either with Resend's *Auto configure* button or
+   by hand. All three are **DNS only**; never proxied.
+
+   | Type | Name | Value |
+   | --- | --- | --- |
+   | MX | `send` | `feedback-smtp.<region>.amazonses.com`, priority 10 |
+   | TXT | `send` | `v=spf1 include:amazonses.com ~all` |
+   | TXT | `resend._domainkey` | `p=MIGfMA0GCSq…` — the long public key |
+
+   Adding them by hand, put only the part **before** the domain in the Name field. Cloudflare appends
+   `systemhelp.co.uk` itself, so typing `send.systemhelp.co.uk` produces
+   `send.systemhelp.co.uk.systemhelp.co.uk`, which never verifies.
+
+   *Auto configure* only writes into a Cloudflare zone the connection can see. If it was connected to
+   a different Cloudflare account from the one holding `systemhelp.co.uk`, the records land in the
+   wrong zone or nowhere — which is what happened here.
+4. **Check they are really there before believing the dashboard.** Cloudflare is authoritative for the
+   zone, so a correct record resolves immediately; a long wait means the record is not in this zone,
+   not that it is propagating:
+
+   ```sh
+   dig +short TXT resend._domainkey.systemhelp.co.uk @1.1.1.1   # prints the key when correct
+   dig +short TXT send.systemhelp.co.uk @1.1.1.1                # prints the SPF line
+   dig +short MX  send.systemhelp.co.uk @1.1.1.1                # prints the feedback host
+   ```
+5. **Wait for the domain to read Verified.** A send from an unverified domain is refused with `403`
+   and the message "domain is not verified".
+6. **API Keys → Create API key**, sending access only, and copy the `re_…` value — it is shown once.
+   Creating the key before the domain verifies is fine; it simply cannot send until then. A
+   sending-only key cannot read the domain list, so `GET /domains` answers `401` with it: that is the
+   restriction working, not a fault.
+7. **In Cloudflare**, the Pages project → Settings → Environment variables → add `RESEND_API_KEY` as
+   a **Secret** under both **Production** and **Preview**, then **Deployments → Retry deployment**.
+   This can be done before verification finishes: leads keep reaching GoHighLevel and only the email
+   is held back.
 
 | Variable | Default | Notes |
 | --- | --- | --- |

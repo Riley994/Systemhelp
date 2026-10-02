@@ -30,6 +30,9 @@ PARTS = [
 ]
 SAMPLE_PARTS = {"part-one", "part-two", "part-three"}
 
+# the introduction sets the scene for the whole book, and opens the free sample too
+INTRO = "00-introduction.md"
+
 # the page that closes the free sample, and does the only selling in the book
 SAMPLE_CLOSING = """
 #heading(level: 2)[What comes next]
@@ -194,6 +197,16 @@ def part_opener(num: str, title: str) -> str:
 
 def build(sample: bool = False) -> str:
     body = []
+    intro = os.path.join(MANUSCRIPT, INTRO)
+    if os.path.exists(intro):
+        text = io.open(intro, encoding="utf-8").read()
+        lines = text.split("\n")
+        if lines and lines[0].startswith("## "):
+            body.append("#heading(level: 2)[" + rich(lines[0][3:]) + "]")
+            body.append(convert_chapter(lines[1:]))
+        else:
+            body.append(convert_chapter(lines))
+
     for key, num, title, files in PARTS:
         if sample and key not in SAMPLE_PARTS:
             continue

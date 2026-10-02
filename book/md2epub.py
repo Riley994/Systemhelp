@@ -15,7 +15,7 @@ import sys
 
 from ebooklib import epub
 
-from md2print import PARTS, SAMPLE_PARTS, MANUSCRIPT
+from md2print import PARTS, SAMPLE_PARTS, MANUSCRIPT, INTRO
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(HERE, "build")
@@ -194,6 +194,20 @@ purchase.</p>"""
     spine = ["nav", fm]
     toc = []
     n = 0
+
+    # the introduction opens the book in both editions
+    intro_path = os.path.join(MANUSCRIPT, INTRO)
+    if os.path.exists(intro_path):
+        text = io.open(intro_path, encoding="utf-8").read()
+        lines = text.split("\n")
+        head = lines[0][3:].strip() if lines and lines[0].startswith("## ") else "Introduction"
+        page = epub.EpubHtml(title=head, file_name="intro.xhtml", lang="en-GB")
+        page.content = f"<h2 class=\"first\">{inline(head)}</h2>\n" + chapter_html(lines[1:])
+        page.add_item(style)
+        book.add_item(page)
+        spine.append(page)
+        toc.append(page)
+
     for key, num, title, files in PARTS:
         if sample and key not in SAMPLE_PARTS:
             continue

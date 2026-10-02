@@ -113,6 +113,53 @@ mail-client faults.
 Do not proxy anything mail-related. Only the website records should be proxied, and once the Worker
 owns them, Cloudflare manages that for you.
 
+## Which hosting option this is: B, Cloudflare Workers
+
+Verified against the live deployment on 2 October 2026, not assumed.
+
+```
+live host      systemhelp.riley-2e2.workers.dev     → a Worker (.workers.dev, not .pages.dev)
+GET /api/lead  405 {"ok":false,"error":"method_not_allowed"}   → worker/index.js is answering
+a static page  200
+a missing page 404                                  → the custom 404 from the assets binding
+
+wrangler.jsonc
+  name          systemhelp
+  main          worker/index.js
+  assets        ./site
+  run_worker_first  ["/api/*"]
+  routes        commented out — the domain is not attached yet
+```
+
+So this is **B: Cloudflare Workers with static assets**. The site is published as Worker assets
+and `worker/index.js` handles `/api/*`. Nothing is served from an external origin, which rules out
+C, and there is no Pages project, which rules out A.
+
+### What that means for each of the four options
+
+| Option | Applies here? | Why |
+| --- | --- | --- |
+| **A — Pages** | No | There is no Pages project. The repo does carry `functions/api/lead.js`, which would work if you ever migrated to Pages, but the live deployment is a Worker. |
+| **B — Workers** | **Yes, this is it** | Attach the domain to the Worker. |
+| **C — DNS only, external hosting** | No, and this is the current broken state | The old `A` records pointing at the previous provider *are* option C, and they are exactly why the old site appears. There is no external origin to point at. |
+| **D — Redirects / Worker routes** | Only for a tidy-up | Not for attaching the site. Use a Redirect Rule for `www` → apex; that is all it is needed for. |
+
+### The order that avoids conflicts
+
+1. **Clear the DS records** (Fix 1). Independent of all four options — every one of them sits
+   behind the same DNS, so the SERVFAIL persists until the stale keys are gone.
+2. **Delete the old records**: both `A` records on the apex and the `www` CNAME to CloudFront.
+   Do this *before* adding the custom domain, so nothing conflicts when Cloudflare creates its own
+   records.
+3. **Add the custom domains** to the Worker (`systemhelp.co.uk`, then `www.systemhelp.co.uk`).
+4. **Optional, recommended**: a Redirect Rule sending `www.systemhelp.co.uk` → `301` to
+   `https://systemhelp.co.uk`. Every page's canonical tag and the sitemap already declare the apex,
+   so this only removes duplicate content; it changes nothing for visitors who land on the apex.
+
+The config-as-code alternative to step 3 is the `routes` block already written and commented out in
+`wrangler.jsonc` — uncomment it and redeploy. The zone is now in your account, so it will no longer
+fail the way the comment warns about. The dashboard route needs no deploy at all.
+
 ## How to tell it worked
 
 After Fix 1, this should return an answer rather than `SERVFAIL`:

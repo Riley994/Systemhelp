@@ -180,3 +180,20 @@ its `workers.dev` hostname in place, pointing at nothing. Every request to it th
 code runs**, including for paths the script never handled. That is the fingerprint of a missing
 deployment, not a code fault. If a hostname of yours ever answers that way, check whether the Worker
 behind it still exists.
+
+## Environment variables only reach a new deployment
+
+Cloudflare gives a deployment its variables when it builds it. Adding or changing one
+does nothing to the copy already running: the site keeps reporting the old state until a
+new deployment exists. After adding a variable, either press **Retry deployment** in
+Cloudflare, or push any commit to `main` — the push is the trigger.
+
+To see what the live deployment can actually see:
+
+```sh
+curl -s https://systemhelp.co.uk/api/health
+```
+
+`ghlToken`, `ghlLocationId`, `webhook` and `email` each report whether that destination is
+configured. `false` means the running deployment cannot see the value, whatever the
+dashboard shows.

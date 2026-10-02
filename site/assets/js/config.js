@@ -40,8 +40,15 @@ window.TEAMIQ = {
      of an empty box — so it never looks broken.
      --------------------------------------------------------------------- */
   booking: {
-    embedUrl: "",      // e.g. "https://api.leadconnectorhq.com/widget/booking/XXXXXXXX"
-    linkUrl: ""        // e.g. "https://api.leadconnectorhq.com/widget/booking/XXXXXXXX"
+    /* Paste the URL from GoHighLevel → Calendars → your calendar → Share →
+       "Embed code". It looks like
+         https://api.leadconnectorhq.com/widget/booking/XXXXXXXX
+       Open that URL in a browser before pasting it here: a working one shows
+       the calendar, a wrong one shows "404 Page Not Found" and would put a
+       broken box on the page. While this is blank, the booking section shows
+       the email route instead. */
+    embedUrl: "",
+    linkUrl: ""
   },
 
   /* ---------------------------------------------------------------------

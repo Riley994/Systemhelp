@@ -609,3 +609,8 @@ textarea { min-height: 130px; resize: vertical; }
   .page-break { break-before: page; }
 }
 .print-only { display: none; }
+/* With the calendar embedded, the email route sits below it as a quieter
+   fallback rather than a competing call to action. */
+[data-booking-embedded="true"] [data-booking-fallback] { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--hairline); }
+[data-booking-embedded="true"] [data-booking-fallback] h3 { font-size: 1.0625rem; }
+[data-booking-embedded="true"] [data-booking-fallback] p { font-size: .9375rem; color: var(--muted); }

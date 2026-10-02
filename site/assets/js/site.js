@@ -297,13 +297,25 @@
       var url = (CFG.booking || {}).embedUrl;
       var link = (CFG.booking || {}).linkUrl;
       var embed = $("[data-booking-embed]", slot);
-      var fallback = $("[data-booking-fallback]", slot);
       var linkEl = $("[data-booking-link]", slot);
 
       if (url && embed) {
-        embed.innerHTML = '<iframe src="' + url + '" title="Choose a time for your TEAM IQ session" loading="lazy" ' +
-          'referrerpolicy="strict-origin-when-cross-origin"></iframe>';
-        if (fallback) fallback.hidden = true;
+        embed.innerHTML = '<iframe src="' + url + '" title="Choose a time for your TEAM IQ session" ' +
+          'scrolling="no" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+        // GoHighLevel's own widget script resizes the frame to fit the calendar.
+        // Without it the frame stays at the fixed minimum height and clips the
+        // later steps of the booking flow.
+        if (!$("#ghl-embed-helper")) {
+          var helper = document.createElement("script");
+          helper.id = "ghl-embed-helper";
+          helper.src = "https://link.msgsndr.com/js/form_embed.js";
+          helper.async = true;
+          document.body.appendChild(helper);
+        }
+        // The email route stays on the page, demoted. A browser that blocks the
+        // calendar's own storage — Safari by default, and some privacy settings —
+        // would otherwise leave the visitor with no way to ask for a time.
+        slot.setAttribute("data-booking-embedded", "true");
         if (linkEl) linkEl.hidden = true;
       } else if (link && linkEl) {
         linkEl.setAttribute("href", link);

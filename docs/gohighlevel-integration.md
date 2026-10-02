@@ -195,31 +195,38 @@ integration becomes a duplicate rather than a lost lead.
    with the sending domain or with where leads are emailed, so any address you actually read is fine.
 2. **Add the domain: Domains → Add domain → `systemhelp.co.uk`.** Resend sends from the subdomain
    `send.systemhelp.co.uk`, so this does **not** touch the MX records that deliver your own mail.
-3. **Add the records it lists, in Cloudflare DNS** — either with Resend's *Auto configure* button or
-   by hand. All three are **DNS only**; never proxied.
+3. **Add the records it lists, in Cloudflare DNS.** All are **DNS only**; never proxied. This account
+   is on Resend's newer scheme, where SPF and DKIM are delegated by CNAME rather than published as
+   records of their own:
 
    | Type | Name | Value |
    | --- | --- | --- |
-   | MX | `send` | `feedback-smtp.<region>.amazonses.com`, priority 10 |
-   | TXT | `send` | `v=spf1 include:amazonses.com ~all` |
-   | TXT | `resend._domainkey` | `p=MIGfMA0GCSq…` — the long public key |
+   | CNAME | `send.send` | `send.forge.rmta.net` |
+   | CNAME | `rsend.send` | `rsend-euw1.forge.rmta.net` |
+   | TXT | `resend._domainkey.send` | `p=MIGfMA0GCSq…` — the long public key |
 
-   Adding them by hand, put only the part **before** the domain in the Name field. Cloudflare appends
-   `systemhelp.co.uk` itself, so typing `send.systemhelp.co.uk` produces
-   `send.systemhelp.co.uk.systemhelp.co.uk`, which never verifies.
+   Names are shown relative to `systemhelp.co.uk`, so `send.send` means `send.send.systemhelp.co.uk`.
+   Copy the Name and Value exactly as the dashboard shows them. Older accounts get a different set —
+   an MX and an SPF TXT on `send`, plus `resend._domainkey` — so follow the table in front of you,
+   not this one.
 
-   *Auto configure* only writes into a Cloudflare zone the connection can see. If it was connected to
-   a different Cloudflare account from the one holding `systemhelp.co.uk`, the records land in the
-   wrong zone or nowhere — which is what happened here.
+   Read the **Status** column in Resend's records table rather than the domain status at the top: it
+   marks each record individually, so it names the one that is still outstanding. A domain can also
+   sit at *pending* with every record correct and resolving, purely because Resend has not run its
+   next check yet.
 4. **Check they are really there before believing the dashboard.** Cloudflare is authoritative for the
    zone, so a correct record resolves immediately; a long wait means the record is not in this zone,
    not that it is propagating:
 
    ```sh
-   dig +short TXT resend._domainkey.systemhelp.co.uk @1.1.1.1   # prints the key when correct
-   dig +short TXT send.systemhelp.co.uk @1.1.1.1                # prints the SPF line
-   dig +short MX  send.systemhelp.co.uk @1.1.1.1                # prints the feedback host
+   dig +short TXT   resend._domainkey.send.systemhelp.co.uk @1.1.1.1   # the public key
+   dig +short CNAME send.send.systemhelp.co.uk @1.1.1.1                # send.forge.rmta.net
+   dig +short CNAME rsend.send.systemhelp.co.uk @1.1.1.1               # rsend-euw1.forge.rmta.net
    ```
+
+   Once all three resolve, what remains is Resend's own scheduled check: the domain page has a verify
+   action to force it. The "1 hour" in Cloudflare's TTL column is cache lifetime, not a waiting
+   period, and does not delay verification.
 5. **Wait for the domain to read Verified.** A send from an unverified domain is refused with `403`
    and the message "domain is not verified".
 6. **API Keys → Create API key**, sending access only, and copy the `re_…` value — it is shown once.

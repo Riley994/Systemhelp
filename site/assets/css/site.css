@@ -282,6 +282,12 @@ li::marker { color: var(--muted); }
 .card--surface { background: var(--surface); border-color: transparent; }
 .card--feature { border-color: var(--brand); box-shadow: var(--shadow); }
 
+/* A card that sits directly in a rail body, rather than inside a .grid-2 or
+   .grid-3, needs its natural height. Without this it inherits height:100%,
+   stretches to the height of the entire rail, and spills out of the band into
+   the section below. */
+.card--flow { height: auto; }
+
 /* The client strip. Names are set as wordmarks rather than logos, so the strip
    stays even and no third-party logo file is used. Hairline gaps between the
    cells draw the grid. */

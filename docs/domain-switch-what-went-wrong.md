@@ -298,3 +298,33 @@ instead says DNSSEC is not enabled, enabling it will produce that same record.
 The edge certificate is still not issued (SNI `systemhelp.co.uk` against the edge returns a
 handshake failure with no certificate). Expect it within a few minutes of the domain resolving —
 Cloudflare cannot complete issuance while DNS is failing.
+
+---
+
+## Resolved — 2 October, 15:55
+
+The DS records were deleted at GoDaddy. Nominet's registry record for the domain now reports
+`delegationSigned: false` with **no DS records**, and public resolvers answer normally again:
+
+| Resolver | Result |
+| --- | --- |
+| `1.1.1.1`, `9.9.9.9`, `208.67.222.222`, `8.8.4.4` | `NOERROR`, 104.21.36.61 / 172.67.186.191 |
+| `8.8.8.8` | still serving the old DS from cache (its TTL is 10 s) — a short-lived lag, not a fault |
+
+Business email was never affected. The MX records (`mx1-usg2.ppe-hosted.com` and two more), the SPF
+record and the Microsoft 365 verification record are all intact and resolving.
+
+The zone is still *signed* by Cloudflare (two DNSKEYs at the apex). That is harmless with no DS record
+at the registry, because validators treat the zone as unsigned and ignore the signatures. Leave it,
+or turn DNSSEC off in Cloudflare's DNS settings for tidiness — but do not enable it again unless the
+matching DS record is published at the registrar. That was the mistake that caused this outage.
+
+### What was left after this
+
+1. Attach `systemhelp.co.uk` and `www.systemhelp.co.uk` to the **Pages** project
+   (Custom domains). Accept the prompt to replace the old records: the apex still carries proxied A
+   records left from the previous host, and `www` pointed at a CloudFront distribution. The
+   certificate is issued automatically once the custom domain is attached and the name resolves.
+2. Set the lead environment variables on the Pages project (`GHL_TOKEN`, `GHL_LOCATION_ID`,
+   `RESEND_API_KEY`). Until then the form responds with every destination `skipped`: it accepts the
+   submission and delivers it nowhere.

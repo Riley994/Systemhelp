@@ -5,22 +5,26 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Every directory the server touches must be copied, at the same relative paths
-# as in the repository, because server.mjs imports across directories:
+# Every directory the server imports from must be copied, at the same relative
+# paths as in the repository, because server.mjs imports across directories:
 #
 #   /app/server/server.mjs   imports   ../shared/lead-delivery.js
+#   /app/server/server.mjs   imports   ../functions/api/lead.js
 #
-# Omitting shared/ produces ERR_MODULE_NOT_FOUND at startup and the container
-# exits with code 1. That is the failure this file previously caused.
-COPY server/ ./server/
-COPY shared/ ./shared/
-COPY site/   ./site/
+# Missing either one gives ERR_MODULE_NOT_FOUND at startup, the container exits
+# with code 1, and the deployment fails its health check. Both have happened:
+# first shared/, then functions/.
+COPY server/    ./server/
+COPY shared/    ./shared/
+COPY functions/ ./functions/
+COPY site/      ./site/
 
 # Fail the build rather than the running container if an import is missing.
 RUN node --input-type=module -e "\
-  const m = await import('/app/shared/lead-delivery.js'); \
-  if (typeof m.deliverLead !== 'function') throw new Error('deliverLead is not exported'); \
-  console.log('shared module OK');"
+  const shared = await import('/app/shared/lead-delivery.js'); \
+  if (typeof shared.deliverLead !== 'function') throw new Error('deliverLead is not exported'); \
+  await import('/app/functions/api/lead.js'); \
+  console.log('lead modules OK');"
 
 ENV NODE_ENV=production
 ENV PORT=3000

@@ -107,12 +107,23 @@
     // enquiry form prefill from ?interest=
     try {
       var interest = new URLSearchParams(window.location.search).get("interest");
-      var sel = $("#interest");
+      // matched by name, not id: the enquiry form's select is ct-interest, so
+      // looking for #interest meant nothing was ever carried over from a link
+      var sel = $('select[name="interest"]');
+      var matched = false;
       if (interest && sel) {
         $$("option", sel).forEach(function (o) {
-          if (o.value.toLowerCase() === interest.toLowerCase()) sel.value = o.value;
+          if (o.value.toLowerCase() === interest.toLowerCase()) {
+            sel.value = o.value;
+            matched = true;
+          }
         });
-        sel.value = interest;
+      }
+      // A request for a time needs somewhere to write the times. Only ever fill
+      // an empty box, so nothing already typed can be overwritten.
+      var message = $('textarea[name="message"]');
+      if (matched && message && !message.value.trim()) {
+        message.value = "Area of concern:\n\nTwo or three times that suit:\n1. \n2. \n3. ";
       }
     } catch (e) { /* older browsers: ignore */ }
 

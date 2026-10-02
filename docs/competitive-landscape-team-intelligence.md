@@ -134,7 +134,24 @@ Taken from the papers themselves, not from summaries:
 | Correlation with average social sensitivity, equality of turn-taking, proportion of women; **not** with average or maximum individual intelligence | Woolley et al., 2010 | The paper itself |
 | 22 studies, 5,279 individuals, 1,356 groups | Riedl et al., *PNAS* 2021 | Publisher and institutional records |
 | Five dynamics; psychological safety the strongest | Google re:Work | The guide |
-| Team performance spans 1.33 to 15,158 against 2.63 to 4.89 for individuals | Szatmari, Deichmann & van den Ende, *Strategic Organization* 23(4), 2025 | The paper itself |
+| Team performance: revenue generated per team member ranged from 1.33 to 15,158.12, logged before analysis | Szatmari, Deichmann & van den Ende, *Strategic Organization* 23(4), 2025 | The paper itself |
 
 These are stronger than the figures we removed, they are all published, and every one of them
 can be cited to a source a procurement team can open.
+
+**Correction, made while checking this.** The site previously claimed that team performance
+varies roughly 15,000 times more widely than individual performance, citing 2.63-4.89 for
+individuals against 1.33-15,158 for teams. That comparison does not hold up. The SAGE paper's
+performance measure is revenue generated per team member, in money units, logged before
+analysis; its Table 1 gives a minimum of 1.33 and a maximum of 15,158.12. The figures 2.63 and
+4.89 appear nowhere in the paper. A money range and a score range cannot be divided to produce
+a ratio, and the individual-performance range had no source in the linked paper at all.
+
+The claim has been removed from the homepage, the evidence page, the insight article that
+repeated it, and the references. What replaces it is checkable: the team-level dispersion
+stated in its own units, and the 43% of group-performance variance from Woolley et al., which
+is in that paper.
+
+The lesson generalises. This was the most quantitative claim in the funnel, it sat on the
+homepage as a headline metric, and it would have collapsed the moment a procurement analyst
+opened the source the page invites them to open.

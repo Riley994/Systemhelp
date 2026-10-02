@@ -54,6 +54,19 @@ It is also listed against each sub-account in the agency view. Keep it to hand f
 3. Scopes — select the minimum:
    - **Contacts → Write** — needed to create and update the contact, add tags and write the note
    - **Contacts → Read** — optional, useful if you later want the site to look a contact up
+
+   Nothing else is needed, and the list is long. The site makes exactly three calls, and
+   **Contacts → Write** covers all of them:
+
+   | The site does this | Endpoint |
+   | --- | --- |
+   | creates or updates the contact | `POST /contacts/upsert` |
+   | adds its tags | `POST /contacts/{id}/tags` |
+   | writes the enquiry as a note | `POST /contacts/{id}/notes` |
+
+   Leave every other scope unticked — calendars, conversations, opportunities, workflows, payments,
+   funnels and the rest are not used by this site. A narrower token is easier to audit and safer to
+   hold.
 4. Create it and **copy the token immediately**. GoHighLevel shows it once; if you lose it you
    rotate rather than recover.
 

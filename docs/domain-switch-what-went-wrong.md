@@ -229,3 +229,72 @@ after the DS records are cleared, look at **SSL/TLS → Edge Certificates**.
 One note on the SSL mode I mentioned earlier: for a Worker custom domain it is moot. There is no
 origin to encrypt to — Cloudflare terminates the connection and runs the Worker. Set it to
 **Full (strict)** anyway, so that anything you proxy later is not left on Flexible.
+
+---
+
+# If GoDaddy's DNSSEC panel shows "off"
+
+It does not mean the registry is clear. Read straight from Nominet's registry via RDAP
+(`https://rdap.nominet.uk/uk/domain/systemhelp.co.uk`) at 12:55 on 2 October:
+
+```
+domain       systemhelp.co.uk
+status       client transfer prohibited, client update prohibited, client renew prohibited,
+             client delete prohibited
+nameservers  arturo.ns.cloudflare.com., surina.ns.cloudflare.com.
+registrar    GoDaddy.com, LLC
+registered   2000-05-24        last changed 2026-10-01 (the nameserver move)
+
+DS  key tag 33789,  algorithm 13,  digest type 2
+DS  key tag 51860,  algorithm 13,  digest type 2
+```
+
+Two public resolvers report the same two records. So this is not a display quirk and not a caching
+artefact — the stale keys are genuinely in the parent zone.
+
+**Why the panel says off.** GoDaddy's DNSSEC controls only manage those records while the domain
+uses GoDaddy's nameservers. The moment you moved to Cloudflare, the panel stopped showing and
+managing them. But DS records already published at the registry stay there. They are a
+**registrar-level** record — Nominet will not accept a change from the registrant directly, only
+from GoDaddy as the registrar of record.
+
+## Three routes, best first
+
+**1. Add, don't remove.** A DS RRset may contain several records, and a validating resolver is
+satisfied if **any** of them matches a key in the zone. So you do not have to get the old ones
+deleted. If GoDaddy offers *Add DS record* — some accounts show this even with the toggle reading
+off — add Cloudflare's:
+
+```
+key tag 33447   algorithm 13   digest type 2   digest: (copy from Cloudflare's DNSSEC page)
+```
+
+Resolution starts working immediately. The two stale records become harmless leftovers, worth
+tidying at renewal.
+
+**2. Ask GoDaddy support.** One message: remove the DS records with key tags **33789** and
+**51860** for `systemhelp.co.uk`, and add Cloudflare's **33447**. Registrar of record is
+**GoDaddy.com, LLC**. This is a routine registrar task. Quote the key tags and the domain; they can
+see both in their own records.
+
+**3. Fallback if support is slow.** Point the nameservers back at GoDaddy's temporarily — the
+DNSSEC panel reappears — turn DNSSEC off there, which removes the DS records at the registry, then
+move the nameservers back to Cloudflare. It works, but it adds a second outage window, so try 1 and
+2 first.
+
+## Which DS record is the right one
+
+The zone is being signed by Cloudflare. Measured directly, it publishes:
+
+```
+flags=256  algorithm=13  key tag 29253   (ZSK)
+flags=257  algorithm=13  key tag 33447   (KSK / SEP)   <- the DS must reference this one
+```
+
+Open Cloudflare → `systemhelp.co.uk` zone → **DNS → Settings → DNSSEC**. The DS record shown there
+should read **key tag 33447, algorithm 13, digest type 2**. That is the one to publish. If the panel
+instead says DNSSEC is not enabled, enabling it will produce that same record.
+
+The edge certificate is still not issued (SNI `systemhelp.co.uk` against the edge returns a
+handshake failure with no certificate). Expect it within a few minutes of the domain resolving —
+Cloudflare cannot complete issuance while DNS is failing.

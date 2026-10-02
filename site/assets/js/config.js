@@ -47,8 +47,8 @@ window.TEAMIQ = {
        the calendar, a wrong one shows "404 Page Not Found" and would put a
        broken box on the page. While this is blank, the booking section shows
        the email route instead. */
-    embedUrl: "",
-    linkUrl: ""
+    embedUrl: "https://api.leadconnectorhq.com/widget/booking/bnoL5X9wCAEEUo3UruPt",
+    linkUrl: "https://api.leadconnectorhq.com/widget/booking/bnoL5X9wCAEEUo3UruPt"
   },
 
   /* ---------------------------------------------------------------------

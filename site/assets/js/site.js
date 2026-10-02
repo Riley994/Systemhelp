@@ -315,8 +315,20 @@
       var linkEl = $("[data-booking-link]", slot);
 
       if (url && embed) {
-        embed.innerHTML = '<iframe src="' + url + '" title="Choose a time for your TEAM IQ session" ' +
+        // GoHighLevel's widget can take several seconds to paint and its frame
+        // starts white, so say what is coming rather than showing an empty box
+        // on the page that has to convert.
+        embed.innerHTML =
+          '<p class="booking-slot__loading">Loading the calendar…</p>' +
+          '<iframe src="' + url + '" title="Choose a time for your TEAM IQ session" ' +
           'scrolling="no" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+        var frame = $("iframe", embed);
+        if (frame) {
+          frame.addEventListener("load", function () {
+            var note = $(".booking-slot__loading", embed);
+            if (note) note.remove();
+          });
+        }
         // GoHighLevel's own widget script resizes the frame to fit the calendar.
         // Without it the frame stays at the fixed minimum height and clips the
         // later steps of the booking flow.

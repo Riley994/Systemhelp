@@ -614,3 +614,6 @@ textarea { min-height: 130px; resize: vertical; }
 [data-booking-embedded="true"] [data-booking-fallback] { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--hairline); }
 [data-booking-embedded="true"] [data-booking-fallback] h3 { font-size: 1.0625rem; }
 [data-booking-embedded="true"] [data-booking-fallback] p { font-size: .9375rem; color: var(--muted); }
+/* The frame is white until GoHighLevel's widget paints, so the slot says what
+   is loading rather than showing an empty box on the page that must convert. */
+.booking-slot__loading { padding: 34px 0 12px; color: var(--body); font-size: .9375rem; }

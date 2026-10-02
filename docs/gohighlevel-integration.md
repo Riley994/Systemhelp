@@ -42,6 +42,10 @@ https://app.gohighlevel.com/v2/location/XXXXXXXXXXXXXXXXXXXX/dashboard
                                        └──── this is the location id ────┘
 ```
 
+If the account runs on a white-labelled domain, the address looks the same with a different host —
+for example `https://app.guaranteedcrm.io/v2/location/XXXXXXXXXXXXXXXXXXXX/dashboard`. The id is
+always the segment between `/location/` and `/dashboard`.
+
 It is also listed against each sub-account in the agency view. Keep it to hand for step 3.
 
 ## Step 2 — create the Private Integration token

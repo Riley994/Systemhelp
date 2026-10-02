@@ -244,3 +244,62 @@ Which to choose:
 
 Both are free at this traffic level. Workers is the platform Cloudflare is actively developing;
 Pages is the simpler mental model with fewer moving parts. Either serves this site identically.
+
+## Finishing the Pages setup
+
+`systemhelp.pages.dev` already exists. It answers with Cloudflare's **522 "connection timed out"**
+on every path, which means the project has no production deployment serving it yet — nothing to do
+with the code. Four settings finish it.
+
+**1. Build configuration** — Workers & Pages → systemhelp (the Pages project) → Settings → Build
+configuration:
+
+| Setting | Value |
+| --- | --- |
+| Build command | leave **empty** |
+| Build output directory | `site` |
+
+Leave the build command empty: there is nothing to compile, the site is already HTML, CSS and
+JavaScript. Do **not** put `npx wrangler deploy` there — that is a Workers instruction, and it
+belonged to the Worker, which no longer exists. If the output directory is left at the default,
+Pages publishes the repository root, which has no `index.html` at the top level.
+
+**2. Environment variables** — Settings → Environment variables, set for **Production and
+Preview**:
+
+| Name | Type | Value |
+| --- | --- | --- |
+| `GHL_TOKEN` | secret | GoHighLevel Private Integration token |
+| `GHL_LOCATION_ID` | text | the sub-account id |
+| `RESEND_API_KEY` | secret | optional — the safety-net lead email |
+
+**3. Deploy** — Deployments → **Retry deployment**. A successful build ends with the site published
+and the 522 gone. The build is only: clone, publish `site`, bundle `functions/`. No install step and
+no dependencies.
+
+**4. Custom domains** — Custom domains → Set up a custom domain → `systemhelp.co.uk`, then
+`www.systemhelp.co.uk`. If Pages reports a conflicting DNS record, delete the old one first: the
+Worker is gone, but the records it created may still be in the zone.
+
+### Only `/api/*` should run the Function
+
+`site/_routes.json` declares that only `/api/*` invokes the Function:
+
+```json
+{ "version": 1, "include": ["/api/*"], "exclude": [] }
+```
+
+Everything else is then served as a static asset, which is faster and does not consume a Functions
+invocation for every page view.
+
+### If the build cannot resolve the shared module
+
+Pages bundles each Function, and imports from outside the `functions` directory are supported. If a
+build ever reports `Could not resolve "../../shared/lead-delivery.js"`, move that file to
+`functions/_shared/lead-delivery.js` — a leading underscore keeps it out of the routing table — and
+update the two imports in `functions/api/lead.js` and `server/server.mjs`.
+
+### The Worker files are now unused
+
+`wrangler.jsonc` and `worker/index.js` existed only for the Workers route. They are harmless — Pages
+ignores them — but they can be deleted if you would rather the repository describe one platform.

@@ -1,69 +1,26 @@
 // ============================================================================
-// Cloudflare Workers configuration
+// Cloudflare configuration — Cloudflare Pages
 // ----------------------------------------------------------------------------
-// This is the file Cloudflare's Git integration reads when it runs
-// `npx wrangler deploy`. Without it the build fails with
-// "Missing entry-point to Worker script or to assets directory".
+// This site is published by Cloudflare Pages, not by a Worker. Pages reads this
+// file for the build output directory, which is why it must contain
+// `pages_build_output_dir`. Without that key Pages reports:
 //
-// HOW IT WORKS
-//   • Everything in ./site is published as static files. That is the website.
-//   • worker/index.js only runs for /api/* requests, which is the form
-//     endpoint. Every other request is served straight from the static files,
-//     so images and pages do not consume Worker requests.
-//   • A request for a page that does not exist returns site/404.html.
+//   "A Wrangler configuration file was found but it does not appear to be valid.
+//    Did you mean to use wrangler.toml to configure Pages? If so, then make sure
+//    the file is valid and contains the `pages_build_output_dir` property."
 //
-// TO RENAME THE PROJECT, change "name" below. It must match the Worker name
-// in the Cloudflare dashboard, or Cloudflare will create a second Worker.
+// WHAT PAGES DOES WITH THIS REPOSITORY
+//   • Publishes everything in ./site as the website
+//   • Runs ./functions/api/lead.js as the Function behind POST /api/lead
+//   • Applies site/_headers, site/_redirects and site/_routes.json
 //
-// COMMON SETTINGS YOU MIGHT CHANGE
-//   assets.directory        the folder published as the website
-//   assets.run_worker_first which paths skip the static files and hit the
-//                           Worker script. Remove it entirely to let the
-//                           static files take priority for every path.
+// There is nothing to compile: the site is already HTML, CSS and JavaScript.
+// The build command in the Pages dashboard must therefore be LEFT EMPTY. If it
+// is set to `pnpm run build` the build fails with
+// ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND, because there is no package.json.
 // ============================================================================
 {
   "name": "systemhelp",
   "compatibility_date": "2026-10-01",
-  "main": "worker/index.js",
-  "assets": {
-    "directory": "./site",
-    "binding": "ASSETS",
-    "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
-  },
-  // --------------------------------------------------------------------------
-  // THE CUSTOM DOMAIN
-  // Once systemhelp.co.uk exists as a zone in your Cloudflare account, delete
-  // the "//" markers below and the next deploy claims both hostnames for this
-  // Worker, creating the DNS records and the certificate for you.
-  //
-  // Leave it commented until then: a route for a domain that is not in the
-  // account makes `wrangler deploy` fail, which would break the Git build.
-  //
-  // The dashboard route is Workers & Pages > systemhelp > Settings >
-  // Domains & Routes > Add > Custom domain, if you would rather click it.
-  // See docs/move-domain-to-cloudflare.md.
-  // --------------------------------------------------------------------------
-  // "routes": [
-  //   { "pattern": "systemhelp.co.uk",     "custom_domain": true },
-  //   { "pattern": "www.systemhelp.co.uk", "custom_domain": true }
-  // ],
-  // --------------------------------------------------------------------------
-  // HOSTNAMES
-  // Declared explicitly so that a change made in the dashboard cannot leave the
-  // Worker in a combination that fails before the script runs. Error 1042
-  // ("Worker tried to fetch from another Worker on the same zone") is returned
-  // for every path, before any code executes, when preview URLs are on and
-  // workers.dev is off — a known Workers bug — and also when the same hostname
-  // is claimed twice, once as a custom domain and once as a route pattern.
-  //
-  // Leave both lines as they are, and attach the domain in ONE place only:
-  // either the dashboard's Domains & Routes, or the routes block above, not
-  // both.
-  // --------------------------------------------------------------------------
-  "workers_dev": true,
-  "preview_urls": false,
-  "observability": {
-    "enabled": true
-  }
+  "pages_build_output_dir": "./site"
 }

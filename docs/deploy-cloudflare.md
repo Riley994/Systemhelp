@@ -1,173 +1,103 @@
 # Deploying to Cloudflare
 
-## Did the settings you entered work?
+**The site is published by Cloudflare Pages.** There is no Worker any more.
 
-**No — and they could not have.** The screen you were on was Cloudflare's **Workers** Git integration, whose default deploy command is:
+---
 
-```
-npx wrangler deploy
-```
+## Where things stand (2 October, 15:26)
 
-That command reads a `wrangler.jsonc` file from the repository to know *what* to deploy. The repository did not have one, so the build will have failed with something like:
+| | State |
+| --- | --- |
+| Worker `systemhelp` | **deleted** — which is why `systemhelp.riley-2e2.workers.dev` now answers `error code: 1042` on every path. Nothing was wrong with the code. |
+| Pages project `systemhelp` | **exists**. `systemhelp.pages.dev` answers **522** on every path, which means no successful production deployment is serving it. |
+| The last Pages build | **failed**: `Executing user command: pnpm run build` → `ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND`. There is no `package.json`, because there is nothing to compile. |
+| `systemhelp.co.uk` | **does not resolve** — stale DNSSEC records at the registry. Separate problem, explained at the end. |
 
-```
-✘ [ERROR] Missing entry-point to Worker script or to assets directory
-```
+---
 
-There is nothing you did wrong. Cloudflare has two products that can host this site and they want different things:
+## The fix: two fields in the Pages project
 
-| | **Workers** (the screen you saw) | **Pages** (the classic one) |
+Workers & Pages → **systemhelp** (the *Pages* project) → **Settings → Build configuration**
+
+| Field | Set it to | Why |
 | --- | --- | --- |
-| Deploy command | `npx wrangler deploy` — needs `wrangler.jsonc` | none; you point it at a folder |
-| Where the form endpoint lives | a Worker script | a `functions/` folder |
-| Preview per branch | yes | yes |
+| Build command | **empty** — or the word `true` | There is nothing to compile. `pnpm run build` fails because the repository has no `package.json`. |
+| Build output directory | `site` | That is where the website is. Left at the default, Pages publishes the repository root, which has no `index.html` at the top level. |
 
-The repository now supports **both**. Pick one route below and stick to it.
+The output directory is also declared in `wrangler.jsonc` as `"pages_build_output_dir": "./site"`, so
+Pages reads it from the repository. The build command is *not* in the repository — it only exists in
+the dashboard, so it has to be cleared by hand.
+
+Then **Deployments → Retry deployment**. A successful build ends with:
+
+```
+Success: Your site was deployed!
+https://systemhelp.pages.dev
+```
 
 ---
 
-## Route A — Workers (you are already here)
+## Environment variables
 
-I have added the two files that make your existing setup work. Nothing else changes.
+Settings → **Environment variables** → add each one for **Production *and* Preview**, then redeploy
+so the new values are picked up.
 
-**What was added**
+| Name | Type | Value |
+| --- | --- | --- |
+| `GHL_TOKEN` | Secret | GoHighLevel Private Integration token — see [gohighlevel-integration.md](gohighlevel-integration.md) |
+| `GHL_LOCATION_ID` | Text | the GoHighLevel sub-account id |
+| `RESEND_API_KEY` | Secret | optional — emails you every lead as a safety net |
 
-| File | Purpose |
+---
+
+## What Pages does with this repository
+
+| Path | What it is |
 | --- | --- |
-| `wrangler.jsonc` | Tells Cloudflare that `./site` is the website and `worker/index.js` is the script |
-| `worker/index.js` | Routing only — it imports the *same* lead handler the Pages version uses, so there is still one copy of that logic |
+| `site/` | The whole website. This is the build output directory. |
+| `site/_headers` | Security and caching headers |
+| `site/_redirects` | The old systemhelp.co.uk URLs, redirected so search rankings are kept |
+| `site/_routes.json` | Declares that only `/api/*` invokes a Function, so every page view is a free, fast static request |
+| `functions/api/lead.js` | `POST /api/lead` — the form endpoint |
+| `functions/api/health.js` | `GET /api/health` — proves the Function layer is live |
+| `shared/lead-delivery.js` | Where a lead goes: GoHighLevel, then the webhook, then the owner email |
+| `wrangler.jsonc` | Pages reads the build output directory from here |
+| `server/`, `tools/`, `book/`, `docs/` | Local development, the PDF renderer, the book. Never published. |
 
-**What to do**
-
-1. Push the change (already done if you are reading this from the latest `main`).
-2. In the Cloudflare dashboard, open your Worker → **Deployments** (or the build you created) → **Retry build**.
-3. Leave the settings exactly as they are:
-   - Build command: **None**
-   - Deploy command: `npx wrangler deploy`
-   - Root directory: `/`
-4. Watch the log. A successful build ends with something like:
-
-```
-✨ Read 91 files from the assets directory ./site
-Total Upload: 4.59 KiB / gzip: 1.76 KiB
-Uploaded systemhelp (x.x sec)
-Deployed systemhelp triggers (x.x sec)
-  https://systemhelp.<your-subdomain>.workers.dev
-```
-
-That URL at the end is your live site.
-
-> **If the Worker name in your dashboard is not `systemhelp`**, either rename the Worker to `systemhelp` or change `"name"` in `wrangler.jsonc` to match. If the names differ, Cloudflare will quietly deploy a *second* Worker and you will be editing the wrong one.
+Nothing in `functions/` needs registering: Pages routes it by filename. A file or folder whose name
+starts with `_` is not routed.
 
 ---
 
-## Route B — Cloudflare Pages (the simpler alternative)
+## Testing after it deploys
 
-If you would rather not deal with Workers, Pages is fewer moving parts, because the repository already contains the `functions/` folder that Pages picks up automatically.
+```sh
+# 1. Is the Function layer live?
+curl -s https://systemhelp.pages.dev/api/health
+# → {"ok":true,"service":"team-iq","runtime":"pages","time":"..."}
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** tab → **Connect to Git**.
-2. Choose `Riley994/Systemhelp`.
-3. Settings:
-
-| Setting | Value |
-| --- | --- |
-| Project name | `systemhelp` |
-| Production branch | `main` |
-| Framework preset | **None** |
-| Build command | *(leave empty)* |
-| Build output directory | `site` |
-| Root directory | *(leave empty)* |
-
-4. **Save and Deploy**. You get a `systemhelp.pages.dev` URL.
-
-Do not set a build command. There is nothing to compile — the HTML in `site/` is the finished website.
-
----
-
-## How to test the deployment
-
-### 1. Did the build succeed?
-
-Dashboard → your project → **Deployments** → click the newest one. You want a green *Success* and a deployment URL. If it failed, open the log and look for the first line beginning with `✘`. Anything about `wrangler`, `entry-point`, or `assets` means the config did not reach the repository — check that `wrangler.jsonc` is committed on `main`.
-
-### 2. Does the site answer?
-
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://YOUR-URL/
-curl -s -o /dev/null -w "%{http_code}\n" https://YOUR-URL/board-case/
-curl -s -o /dev/null -w "%{http_code}\n" https://YOUR-URL/assets/css/site.css
-```
-
-All three should print `200`.
-
-### 3. Does the branded 404 work?
-
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://YOUR-URL/no-such-page/
-```
-
-Expect `404`, and in a browser that page shows your design, not Cloudflare's default.
-
-### 4. Does the form endpoint work?
-
-```bash
-curl -s -X POST https://YOUR-URL/api/lead \
+# 2. Does a form submission travel all the way to GoHighLevel?
+curl -s -X POST https://systemhelp.pages.dev/api/lead \
   -H 'Content-Type: application/json' \
-  -d '{"form":"test","name":"Cloudflare Test","email":"test@example.com","submittedAt":"2026-01-01T00:00:00Z"}'
+  --data '{"form":"test","name":"Test Contact","email":"you@yourdomain.co.uk","submittedAt":"2026-10-02T12:00:00Z"}'
+# → {"ok":true,"delivered":{"ghl":"created","ghlTags":"added","ghlNote":"added","crm":"skipped","email":"sent"}}
 ```
 
-Expected:
+`ghl: "skipped"` means the GoHighLevel variables are not set yet. `ghl: "failed_401"` means the token
+was rejected — wrong token, or the Private Integration is missing the **Contacts → Write** scope.
 
-```json
-{"ok":true,"delivered":{"crm":"skipped","email":"skipped"}}
-```
-
-`skipped` is correct until you add the environment variables below. Then try a deliberate mistake:
-
-```bash
-curl -s -X POST https://YOUR-URL/api/lead -H 'Content-Type: application/json' -d '{"name":"","email":"nope"}'
-```
-
-Expect `{"ok":false,"error":"invalid_fields","fields":["name","email"]}`.
-
-Finally, submit a real form in the browser and confirm you land on the thank-you page.
-
-### 5. Check the whole site
-
-Walk through the main pages once on the live URL: home, why-team-iq, how-it-works, board-case (run the calculator), scorecard (complete it), workshop, diagnostic-session, pricing, results, book, about-us, contact-page, privacy, terms, cookies. Also open the site on a phone.
+Then delete the test contact from GoHighLevel.
 
 ---
 
-## Environment variables (needed before the forms are useful)
+## Custom domains
 
-Without these, submissions are accepted and shown the thank-you page, but nothing is delivered anywhere.
+**Custom domains → Set up a custom domain** → `systemhelp.co.uk`, then `www.systemhelp.co.uk`.
 
-**Workers** → your Worker → **Settings** → **Variables and Secrets** → add for Production:
+Pages creates a DNS record pointing at the project. If it reports a conflict, delete the old record
+first: the Worker is gone, but the records it created may still be in the zone.
 
-| Name | Value | Notes |
-| --- | --- | --- |
-| `CRM_WEBHOOK_URL` | your GoHighLevel inbound webhook | optional but recommended |
-| `RESEND_API_KEY` | your Resend key | optional; free tier covers 3,000 emails/month |
-| `LEAD_NOTIFY_EMAIL` | `andrew@systemhelp.co.uk` | default if omitted |
-| `LEAD_FROM_EMAIL` | a verified sender, e.g. `website@systemhelp.co.uk` | default if omitted |
-
-**Pages** → your project → **Settings** → **Environment variables**, same four names, set for **Production** and **Preview**.
-
-Mark `RESEND_API_KEY` as a **secret**, not plain text. After adding variables, redeploy so they take effect.
-
-See `docs/funnel-and-tech-options.md` for what to do with the leads once they arrive.
-
----
-
-## Pointing systemhelp.co.uk at it
-
-Only after the site looks right on the temporary URL.
-
-1. In the Cloudflare project: **Settings** → **Domains and Routes** → **Add** → `systemhelp.co.uk`, then `www.systemhelp.co.uk`.
-2. If the domain's DNS is not yet on this Cloudflare account, move it first (change the nameservers at your registrar, or transfer the zone). The account you are using already exists under `Riley@rp-racing.co.uk`; the `systemhelp.co.uk` zone can simply be added to it.
-3. Cloudflare issues the TLS certificate automatically. `site/_redirects` already sends the old addresses to the new pages, and `site/_headers` sets caching and security headers.
-
-Nothing else in the repository needs to change when the domain moves.
+A custom domain cannot be verified until the domain resolves, so fix the DNSSEC problem below first.
 
 ---
 
@@ -175,131 +105,69 @@ Nothing else in the repository needs to change when the domain moves.
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| Build fails: `Missing entry-point` | `wrangler.jsonc` not on the deployed branch | Commit and push it; confirm it is visible on GitHub |
-| Build succeeds but the URL shows "Hello World" | The Worker has its own default script instead of this repository's | Confirm `"main": "worker/index.js"` and that the build log shows the asset count |
-| Site loads but every page is 404 | `assets.directory` cannot see the files | Check the log line `Read N files from the assets directory`; it should say about 91 |
-| Form submits, then nothing arrives | Environment variables not set, or set only for Preview | Add them for **Production** and redeploy |
-| `/api/lead` returns HTML instead of JSON | The request never reached the Worker | Confirm `run_worker_first` contains `"/api/*"` in `wrangler.jsonc` |
-| Two Workers appear in the dashboard | The `"name"` in `wrangler.jsonc` differs from the project name | Rename one so they match, then delete the stray Worker |
+| `522` on `<project>.pages.dev` | No successful production deployment | Clear the build command, set the output directory to `site`, retry the deployment |
+| Build fails, `ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND` | Build command is `pnpm run build` | Clear the Build command field |
+| Build fails, `Missing entry-point` | The build command is `npx wrangler deploy` | That is a Workers instruction. Clear the Build command field. |
+| Pages loads but page styles are missing | Output directory is the repository root | Set it to `site` |
+| Pages loads but `/api/lead` returns 404 | The `functions/` folder was not bundled | The output directory must be `site` |
+| Form says it sent, nothing arrives in GoHighLevel | Environment variables missing, or set only for Preview | Add them for **Production**, then redeploy |
+| `error code: 1042` | The deleted Worker's hostname | Harmless. Use the Pages URL, or remove the hostname from the account. |
+| `systemhelp.co.uk` will not load at all | DNSSEC — see below | The registrar has to clear it |
 
-## Error 1042 on every path
+---
 
-**Symptom.** Every request — pages, stylesheets, even the API — returns a 17-byte `text/plain`
-body reading `error code: 1042`, and the Worker's own code never runs.
+## The domain: stale DNSSEC records
 
-**What it means.** 1042 is *"Worker tried to fetch from another Worker on the same zone"*. It is
-raised before your script executes, so it is always a configuration problem, never a bug in
-`worker/index.js`. There are two known causes:
+Checked directly, at 15:26 on 2 October:
 
-1. **A Workers bug.** When preview URLs are enabled and `workers.dev` is disabled, the platform
-   returns 1042 pre-execution for every path on the Worker. Fix: declare the hostnames explicitly
-   in `wrangler.jsonc` and redeploy.
-
-   ```jsonc
-   "workers_dev": true,
-   "preview_urls": false,
-   ```
-
-2. **The same hostname claimed twice.** `systemhelp.co.uk` attached as a *Custom Domain* in the
-   dashboard **and** covered by a *route pattern* such as `systemhelp.co.uk/*` — including the
-   `routes` block in `wrangler.jsonc` if it has been uncommented. Two claims on one hostname
-   conflict. Open **Workers & Pages → systemhelp → Settings → Domains & Routes** and keep one.
-
-**How to tell which one you have.** The health probe never touches the assets binding, so it
-isolates the two:
-
-```sh
-curl -s https://systemhelp.riley-2e2.workers.dev/api/health
+```
+DS 51860 13 2 526026AE95C6A285EF72275B40CEE02AD8797A5836188E38C840F1C3BF025E4A
+DS 33789 13 2 15C557399020FE46BC8BCFF20C13FAB089458420DE332CF49837F2A0FC63AE2A
 ```
 
-- JSON back (`{"ok":true,...}`) — the Worker is running and the fault is in static file serving.
-- `error code: 1042` — the Worker never started. It is a hostname or route configuration problem:
-  work through the two causes above.
+Nominet's own registry record for the domain reports `secureDNS: delegated = true` with those two
+records, and the registrar of record is **GoDaddy.com, LLC**. A validating resolver therefore returns
+`SERVFAIL`; the domain only answers with validation switched off, which no visitor's browser does.
 
-**Pages is the fallback.** If you would rather not fight the Worker configuration, the same
-repository runs on Cloudflare Pages unchanged — see the next section.
+**Why GoDaddy's panel says DNSSEC is off.** GoDaddy only manages DNSSEC records while the domain uses
+*their* nameservers. The domain now uses `arturo.ns.cloudflare.com` and `surina.ns.cloudflare.com`,
+so GoDaddy's panel has nothing to show and no longer manages the record — but the two DS records
+published earlier are still in the registry, and only the registrar of record can remove them.
 
-## Running the same site on Cloudflare Pages instead
+Two ways to clear it. The first is free and immediate; the second costs a support ticket.
 
-Nothing in the code is Worker-specific. The repository already carries what Pages needs:
-`functions/api/lead.js` is a Pages Function, and `site/_headers` and `site/_redirects` are Pages
-features.
+1. **Do it yourself, taking advantage of the outage you already have.** The domain is unresolvable
+   right now, so there is nothing to lose:
+   - In GoDaddy, set the nameservers back to GoDaddy's defaults.
+   - When the panel offers DNSSEC again, switch it **off**. That removes the DS records.
+   - Set the nameservers back to `arturo.ns.cloudflare.com` and `surina.ns.cloudflare.com`.
+   - Leave DNSSEC off. Do not enable it in Cloudflare unless you also publish the matching DS record
+     from Cloudflare's DNSSEC page at the registrar.
+2. **Ask GoDaddy support** to remove the DS records with key tags **33789** and **51860** for
+   `systemhelp.co.uk`. Quote the key tags; they are visible in GoDaddy's own records for the domain.
 
-1. **Workers & Pages → Create → Pages → Connect to Git**, pick `Riley994/Systemhelp`.
-2. Build command: leave empty (or `true`). Build output directory: `site`.
-3. Environment variables, in the Pages project this time: `GHL_TOKEN`, `GHL_LOCATION_ID`,
-   `RESEND_API_KEY` — the same names and values as the Worker.
-4. **Custom domains → Set up a domain** → `systemhelp.co.uk`, then `www.systemhelp.co.uk`.
+The DS record's TTL is 10 seconds, so resolution returns almost immediately once it is gone.
 
-Which to choose:
+---
+
+## Appendix — what the Worker was, and why it is gone
+
+The repository originally shipped two routes to the same site, because Cloudflare's Git integration
+creates a *Worker* while the site is a natural fit for *Pages*:
 
 | | Workers | Pages |
 | --- | --- | --- |
-| Static site + one API endpoint | Yes | Yes |
-| Config lives in the repository | `wrangler.jsonc` | Dashboard only |
-| Custom domains | Domains & Routes | Custom domains tab |
-| `_headers` / `_redirects` | Supported | Native |
-| Failure mode seen here | Route/hostname conflicts (1042) | None equivalent |
-| Platform direction | Where Cloudflare is investing | Maintained, not the focus |
+| Static site plus one API endpoint | works | works |
+| Configuration | `wrangler.jsonc`, with the entry point and assets declared | the dashboard, plus `pages_build_output_dir` |
+| The form endpoint | `worker/index.js` importing the shared handler | `functions/api/lead.js` |
+| Custom domains | Domains & Routes | Custom domains |
+| `_headers` / `_redirects` | supported | native |
 
-Both are free at this traffic level. Workers is the platform Cloudflare is actively developing;
-Pages is the simpler mental model with fewer moving parts. Either serves this site identically.
+Both hosted the site identically; the Worker was deleted on 2 October and Pages is now the platform.
 
-## Finishing the Pages setup
-
-`systemhelp.pages.dev` already exists. It answers with Cloudflare's **522 "connection timed out"**
-on every path, which means the project has no production deployment serving it yet — nothing to do
-with the code. Four settings finish it.
-
-**1. Build configuration** — Workers & Pages → systemhelp (the Pages project) → Settings → Build
-configuration:
-
-| Setting | Value |
-| --- | --- |
-| Build command | leave **empty** |
-| Build output directory | `site` |
-
-Leave the build command empty: there is nothing to compile, the site is already HTML, CSS and
-JavaScript. Do **not** put `npx wrangler deploy` there — that is a Workers instruction, and it
-belonged to the Worker, which no longer exists. If the output directory is left at the default,
-Pages publishes the repository root, which has no `index.html` at the top level.
-
-**2. Environment variables** — Settings → Environment variables, set for **Production and
-Preview**:
-
-| Name | Type | Value |
-| --- | --- | --- |
-| `GHL_TOKEN` | secret | GoHighLevel Private Integration token |
-| `GHL_LOCATION_ID` | text | the sub-account id |
-| `RESEND_API_KEY` | secret | optional — the safety-net lead email |
-
-**3. Deploy** — Deployments → **Retry deployment**. A successful build ends with the site published
-and the 522 gone. The build is only: clone, publish `site`, bundle `functions/`. No install step and
-no dependencies.
-
-**4. Custom domains** — Custom domains → Set up a custom domain → `systemhelp.co.uk`, then
-`www.systemhelp.co.uk`. If Pages reports a conflicting DNS record, delete the old one first: the
-Worker is gone, but the records it created may still be in the zone.
-
-### Only `/api/*` should run the Function
-
-`site/_routes.json` declares that only `/api/*` invokes the Function:
-
-```json
-{ "version": 1, "include": ["/api/*"], "exclude": [] }
-```
-
-Everything else is then served as a static asset, which is faster and does not consume a Functions
-invocation for every page view.
-
-### If the build cannot resolve the shared module
-
-Pages bundles each Function, and imports from outside the `functions` directory are supported. If a
-build ever reports `Could not resolve "../../shared/lead-delivery.js"`, move that file to
-`functions/_shared/lead-delivery.js` — a leading underscore keeps it out of the routing table — and
-update the two imports in `functions/api/lead.js` and `server/server.mjs`.
-
-### The Worker files are now unused
-
-`wrangler.jsonc` and `worker/index.js` existed only for the Workers route. They are harmless — Pages
-ignores them — but they can be deleted if you would rather the repository describe one platform.
+One consequence worth recording, because it cost an afternoon of diagnosis: deleting a Worker leaves
+its `workers.dev` hostname in place, pointing at nothing. Every request to it then returns
+`error code: 1042` — *"Worker tried to fetch from another Worker on the same zone"* — **before any
+code runs**, including for paths the script never handled. That is the fingerprint of a missing
+deployment, not a code fault. If a hostname of yours ever answers that way, check whether the Worker
+behind it still exists.

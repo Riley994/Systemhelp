@@ -90,6 +90,12 @@ The site is published by Cloudflare Pages, so the variables belong to the Pages 
 | `GHL_LOCATION_ID` | Text | the id from step 1 |
 | `RESEND_API_KEY` | Secret (encrypt) | optional, the safety-net email |
 
+> **The names must match exactly.** The code reads `GHL_TOKEN` and `GHL_LOCATION_ID`, and
+> environment variable names are case-sensitive. A variable named `GHL_systemhelp_Token` is
+> invisible to the site, and every submission would still come back `skipped`. The *integration's*
+> name inside GoHighLevel is only a label — call that whatever you like; it is its **value** that
+> goes into `GHL_TOKEN`.
+
 Add each variable **twice — once under Production and once under Preview** — because the dashboard
 keeps those environments separate, and a variable set only for Preview is not visible to the live
 site. Then **Deployments → Retry deployment**. Environment variables are read when a deployment is

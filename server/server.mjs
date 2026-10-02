@@ -3,11 +3,16 @@
    --------------------------------------------------------------------------
    Two jobs, no dependencies:
      1. Serve the static website from /site
-     2. Handle POST /api/lead  (validate, forward to the CRM, email the owner)
+     2. Handle POST /api/lead
 
-   Environment variables (all optional — the server runs fine without them,
-   it simply has nowhere to forward leads to):
-     CRM_WEBHOOK_URL     GoHighLevel inbound webhook (or any endpoint)
+   Lead delivery lives in shared/lead-delivery.js so that local development
+   behaves exactly like production. Read that file for the full variable list.
+
+   Environment variables (all optional — the server runs fine without them, it
+   simply has nowhere to send leads):
+     GHL_TOKEN           GoHighLevel Private Integration token
+     GHL_LOCATION_ID     GoHighLevel sub-account (location) id
+     CRM_WEBHOOK_URL     any webhook, including a GoHighLevel inbound webhook
      RESEND_API_KEY      Resend API key for the owner notification email
      LEAD_NOTIFY_EMAIL   where leads are emailed (default: andrew@systemhelp.co.uk)
      LEAD_FROM_EMAIL     verified sender (default: website@systemhelp.co.uk)
@@ -16,6 +21,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, extname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { deliverLead } from "../shared/lead-delivery.js";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..", "site");
 const PORT = Number(process.env.PORT || 3000);
@@ -106,56 +112,10 @@ async function handleLead(req, res) {
   if (!isEmail(lead.email)) problems.push("email");
   if (problems.length) return json(res, 400, { ok: false, error: "invalid_fields", fields: problems });
 
-  const results = { crm: "skipped", email: "skipped" };
-
-  // 1. CRM webhook — the original record
-  if (process.env.CRM_WEBHOOK_URL) {
-    try {
-      const r = await fetch(process.env.CRM_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "systemhelp.co.uk", ...lead }),
-        signal: AbortSignal.timeout(8000)
-      });
-      results.crm = r.ok ? "sent" : "failed_" + r.status;
-    } catch { results.crm = "error"; }
-  }
-
-  // 2. Owner notification — the safety net so a lead is never lost
-  if (process.env.RESEND_API_KEY) {
-    const to = process.env.LEAD_NOTIFY_EMAIL || "andrew@systemhelp.co.uk";
-    const from = process.env.LEAD_FROM_EMAIL || "website@systemhelp.co.uk";
-    const lines = Object.entries(lead)
-      .filter(([, v]) => v)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("\n");
-    try {
-      const r = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`
-        },
-        body: JSON.stringify({
-          from: `TEAM IQ website <${from}>`,
-          to: [to],
-          reply_to: lead.email,
-          subject: `New ${lead.form} lead: ${lead.name}${lead.company ? " — " + lead.company : ""}`,
-          text: lines
-        }),
-        signal: AbortSignal.timeout(8000)
-      });
-      results.email = r.ok ? "sent" : "failed_" + r.status;
-    } catch { results.email = "error"; }
-  }
-
   // Never fail the visitor's submission because a downstream service is down:
-  // log it so it can be recovered from the server log.
-  if (results.crm !== "sent" && results.email !== "sent") {
-    console.log("[lead] not delivered downstream", JSON.stringify({ results, lead }));
-  }
-
-  return json(res, 200, { ok: true, delivered: results });
+  // deliverLead logs the lead when nothing got through.
+  const delivered = await deliverLead(lead, process.env);
+  return json(res, 200, { ok: true, delivered });
 }
 
 /* ----------------------------------------------------------------- static */

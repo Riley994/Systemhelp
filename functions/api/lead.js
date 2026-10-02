@@ -1,17 +1,28 @@
 /* ==========================================================================
-   TEAM IQ — Cloudflare Pages Function: POST /api/lead
+   TEAM IQ — POST /api/lead
    --------------------------------------------------------------------------
-   This is the version that runs when the site is hosted on Cloudflare Pages.
-   It behaves exactly like server/server.mjs so the website code is identical
-   on both hosts.
+   This single handler serves both Cloudflare hosts, so there is only ever one
+   copy of the lead logic in the repository:
 
-   Set these in Cloudflare → Pages → your project → Settings → Environment
-   variables (Production and Preview):
-     CRM_WEBHOOK_URL     GoHighLevel inbound webhook (or any endpoint)
-     RESEND_API_KEY      Resend API key for the owner notification email
-     LEAD_NOTIFY_EMAIL   where leads are emailed (default: andrew@systemhelp.co.uk)
-     LEAD_FROM_EMAIL     verified sender (default: website@systemhelp.co.uk)
+     Cloudflare Pages     this file is a Pages Function
+     Cloudflare Workers   worker/index.js imports it (that is how this site is
+                          deployed) and routes /api/* to it
+
+   It validates the submission and hands delivery to shared/lead-delivery.js,
+   which the local Node server uses as well. Delivery destinations:
+
+     1. GoHighLevel, direct API     GHL_TOKEN + GHL_LOCATION_ID
+     2. Generic webhook             CRM_WEBHOOK_URL
+     3. Owner notification email    RESEND_API_KEY
+
+   Where to set them on Cloudflare:
+     Workers & Pages → systemhelp → Settings → Variables and Secrets
+
+   Full setup instructions, including how to create the GoHighLevel token:
+     docs/gohighlevel-integration.md
    ========================================================================== */
+
+import { deliverLead } from "../../shared/lead-delivery.js";
 
 const clean = (v, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
@@ -34,7 +45,7 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: "bad_request" }, 400);
   }
 
-  // bot traps
+  // bot traps: a filled honeypot, or a form completed impossibly fast
   if (clean(data.website)) return json({ ok: true, note: "ignored" });
   const submittedAt = Date.parse(data.submittedAt || "");
   if (Number.isFinite(submittedAt) && Date.now() - submittedAt < 2000) {
@@ -64,50 +75,8 @@ export async function onRequestPost({ request, env }) {
   if (!isEmail(lead.email)) problems.push("email");
   if (problems.length) return json({ ok: false, error: "invalid_fields", fields: problems }, 400);
 
-  const results = { crm: "skipped", email: "skipped" };
-
-  if (env.CRM_WEBHOOK_URL) {
-    try {
-      const r = await fetch(env.CRM_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "systemhelp.co.uk", ...lead })
-      });
-      results.crm = r.ok ? "sent" : "failed_" + r.status;
-    } catch { results.crm = "error"; }
-  }
-
-  if (env.RESEND_API_KEY) {
-    const to = env.LEAD_NOTIFY_EMAIL || "andrew@systemhelp.co.uk";
-    const from = env.LEAD_FROM_EMAIL || "website@systemhelp.co.uk";
-    const lines = Object.entries(lead)
-      .filter(([, v]) => v)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("\n");
-    try {
-      const r = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${env.RESEND_API_KEY}`
-        },
-        body: JSON.stringify({
-          from: `TEAM IQ website <${from}>`,
-          to: [to],
-          reply_to: lead.email,
-          subject: `New ${lead.form} lead: ${lead.name}${lead.company ? " — " + lead.company : ""}`,
-          text: lines
-        })
-      });
-      results.email = r.ok ? "sent" : "failed_" + r.status;
-    } catch { results.email = "error"; }
-  }
-
-  if (results.crm !== "sent" && results.email !== "sent") {
-    console.log("[lead] not delivered downstream", JSON.stringify({ results, lead }));
-  }
-
-  return json({ ok: true, delivered: results });
+  const delivered = await deliverLead(lead, env || {});
+  return json({ ok: true, delivered });
 }
 
 export async function onRequestOptions() {

@@ -1,0 +1,226 @@
+# Connecting the website to your GoHighLevel sub-account
+
+The code is already in place. This document is the setup: what to create in GoHighLevel, what to
+paste into Cloudflare, and how to prove it works.
+
+## How a submission flows
+
+```
+visitor submits a form
+        │
+        ▼
+POST /api/lead                      functions/api/lead.js  (shared by Worker and Pages)
+        │  validate, honeypot, timing trap
+        ▼
+shared/lead-delivery.js             one place, used by Cloudflare and by the local server
+        │
+        ├─► 1. GoHighLevel direct API     GHL_TOKEN + GHL_LOCATION_ID
+        ├─► 2. Generic webhook            CRM_WEBHOOK_URL
+        └─► 3. Owner notification email   RESEND_API_KEY
+```
+
+Every destination is independent and optional. The visitor's submission never fails because a
+downstream service is down — the outcome is returned in the response and logged if nothing got
+through.
+
+| Variable | What it is |
+| --- | --- |
+| `GHL_TOKEN` | Private Integration token from the sub-account |
+| `GHL_LOCATION_ID` | the sub-account (location) id |
+| `GHL_API_BASE` | optional — defaults to `https://services.leadconnectorhq.com` |
+| `GHL_API_VERSION` | optional — defaults to `2021-07-28` |
+| `GHL_CUSTOM_FIELDS` | optional JSON mapping a lead field to a GoHighLevel custom field id |
+| `GHL_NOTES` | optional — set to `off` to stop writing the enquiry note |
+| `RESEND_API_KEY` | optional but recommended — emails you every lead as a safety net |
+
+## Step 1 — find the location id
+
+Open the sub-account in GoHighLevel. The id is in the browser address bar:
+
+```
+https://app.gohighlevel.com/v2/location/XXXXXXXXXXXXXXXXXXXX/dashboard
+                                       └──── this is the location id ────┘
+```
+
+It is also listed against each sub-account in the agency view. Keep it to hand for step 3.
+
+## Step 2 — create the Private Integration token
+
+1. In the **sub-account**, go to **Settings → Private Integrations**.
+   If you cannot see it, enable **Private Integrations** in **Labs** first — that is the usual
+   reason it is missing.
+2. **Create new Integration**. Name it something you will recognise later, for example
+   `Systemhelp website`.
+3. Scopes — select the minimum:
+   - **Contacts → Write** — needed to create and update the contact, add tags and write the note
+   - **Contacts → Read** — optional, useful if you later want the site to look a contact up
+4. Create it and **copy the token immediately**. GoHighLevel shows it once; if you lose it you
+   rotate rather than recover.
+
+> Use a Private Integration token, not a legacy API key. The token is a static OAuth access token
+> with a restricted scope, and you can rotate it or narrow its permissions later without changing
+> any code.
+
+## Step 3 — put both into Cloudflare
+
+The site runs as a Worker, so the variables belong to the Worker:
+
+**Workers & Pages → systemhelp → Settings → Variables and Secrets**
+
+| Name | Type | Value |
+| --- | --- | --- |
+| `GHL_TOKEN` | **Secret** (encrypt) | the token from step 2 |
+| `GHL_LOCATION_ID` | Text | the id from step 1 |
+| `RESEND_API_KEY` | Secret (encrypt) | optional, the safety-net email |
+
+Save, then apply the change if the dashboard asks you to deploy. These values live with the Worker
+and survive future Git builds — you set them once.
+
+If you would rather do it from a terminal, from a clone of the repository with your Cloudflare
+login:
+
+```sh
+npx wrangler secret put GHL_TOKEN
+npx wrangler secret put RESEND_API_KEY
+```
+
+`GHL_LOCATION_ID` is not sensitive, so it can go in the same dashboard page as plain text.
+
+## Step 4 — test it
+
+Send one submission to the live endpoint:
+
+```sh
+curl -s -X POST https://systemhelp.co.uk/api/lead \
+  -H 'Content-Type: application/json' \
+  --data '{"form":"test","name":"Test Contact","email":"you@yourdomain.co.uk","company":"Test Ltd","submittedAt":"2026-10-02T12:00:00Z"}'
+```
+
+A working connection answers:
+
+```json
+{"ok":true,"delivered":{"ghl":"created","ghlTags":"added","ghlNote":"added","crm":"skipped","email":"sent"}}
+```
+
+- `ghl: "created"` — a new contact; `"updated"` means GoHighLevel matched an existing one
+- `ghl: "failed_401"` — the token was rejected: wrong token, or the scope is missing
+- `ghl: "config_incomplete"` — the token is set but `GHL_LOCATION_ID` is not
+- `ghl: "skipped"` — no token configured yet
+
+Then open **Contacts** in the sub-account and search for the email address. You should see the
+contact with the tags below and a note holding the full enquiry.
+
+**Delete the test contact afterwards**, so it does not pollute your pipeline.
+
+## What lands in GoHighLevel
+
+Contact fields:
+
+| Website field | GoHighLevel |
+| --- | --- |
+| name | `firstName`, `lastName` and `name` |
+| email | `email` — this is what GoHighLevel matches on |
+| phone | `phone` |
+| company | `companyName` |
+| form | `source`, as `systemhelp.co.uk — <form>` |
+
+Tags, added *in a second call* so that nothing already on the contact is lost:
+
+| Tag | Meaning |
+| --- | --- |
+| `website-lead` | every submission from this site |
+| `form-scorecard` | which form — also `form-workshop`, `form-book`, `form-diagnostic-enquiry`, `form-board-case`, `form-enquiry` |
+| `iq-band-emerging` | scorecard band: reactive, emerging, developing, strong, exemplary |
+| `iq-score-58` | the raw score, so you can segment on a number |
+| `weakest-shared-clarity` | the pillar the scorecard identified as weakest |
+| `team-60-200` | the team-size band they selected |
+
+> Why tags are not sent with the contact: the upsert endpoint's `tags` field **overwrites every tag
+> on the contact**. Sending them there would silently wipe tags your workflows depend on. The
+> separate Add Tag call is additive, so a returning visitor keeps their history.
+
+The note on the contact carries the free text — role, area of concern, score, pillar breakdown —
+where the person picking the lead up will actually look for it.
+
+## Optional — your own custom fields
+
+If you want the score and pillar scores in proper GoHighLevel fields rather than a note:
+
+1. Create the field: **Settings → Custom Fields → Add Field** (contact type).
+2. Get its id: open the field to edit, and read the id from the URL.
+3. Add a variable, `GHL_CUSTOM_FIELDS`, containing JSON that maps the website's field name to that
+   id:
+
+```json
+{"score":"aBc123DeF456","weakestPillar":"gHi789JkL012","pillarScores":"mNo345PqR678"}
+```
+
+The website's field names are `score`, `weakestPillar`, `pillarScores`, `company`, `role`,
+`teamSize`, `interest`, `message`. Anything you map is sent as a custom field as well as appearing
+in the note.
+
+## The alternative — inbound webhook instead of a token
+
+If you would rather not hold a token at all, set `CRM_WEBHOOK_URL` to a GoHighLevel inbound webhook
+instead:
+
+1. **Automation → Workflows → Create Workflow → Add Trigger → Inbound Webhook**
+2. Copy the webhook URL, and set it as `CRM_WEBHOOK_URL` in the Worker.
+3. In that workflow, add an action to **Create/Update Contact** and map the incoming fields.
+
+One thing to know before choosing this route: an inbound webhook trigger does **not** create a
+contact on its own, and it does not automatically promote the incoming fields into contact fields.
+The workflow has to do both. That is why the direct API is the primary path here — it creates the
+contact, the tags and the note without you having to build anything in the workflow builder.
+
+## When something is wrong
+
+Nothing is lost quietly. If a lead reaches no destination at all, the server logs the whole payload:
+
+```
+[lead] not delivered downstream {"results":{...},"lead":{...}}
+```
+
+- **Cloudflare:** Workers & Pages → systemhelp → Logs (live tail), or **Observability** for history
+- **Locally:** the terminal running `node server/server.mjs`
+
+A wrong or expired token logs `[lead] GoHighLevel rejected the token — check GHL_TOKEN and its
+scopes`. Set `RESEND_API_KEY` as well and you also get an email for every lead, so a broken
+integration is a duplicate rather than a lost enquiry.
+
+## The funnel work this unlocks
+
+The tags are designed so that GoHighLevel does the routing rather than you:
+
+- `form-scorecard` + `iq-band-emerging` → a nurture sequence that ends in the diagnostic offer
+- `form-diagnostic-enquiry` → notify you, create the opportunity in a pipeline, send the calendar
+  link
+- `form-book` → workshop registrations, with the monthly reminder sequence
+- `form-board-case` → the internal-champion track: send the business case PDF, then a check-in
+
+Because the score and weakest pillar are on the contact, a workflow can reference them directly —
+"your weakest area is shared clarity" lands far better than a generic follow-up.
+
+## Booking
+
+You already own a scheduler inside GoHighLevel, so there is no reason to pay for a separate booking
+tool. Create the calendar in the sub-account, then put its link into the site's settings file:
+
+```js
+// site/assets/js/config.js
+booking: {
+  embedUrl: "https://api.leadconnectorhq.com/widget/booking/XXXXXXXX",
+  linkUrl:  "https://api.leadconnectorhq.com/widget/booking/XXXXXXXX"
+}
+```
+
+`embedUrl` renders the calendar inline on the diagnostic page; `linkUrl` is the plain link used by
+buttons everywhere else. That single change replaces every "book a call" placeholder on the site.
+
+## Security
+
+- Rotate the token every 90 days (**Private Integrations → Rotate**). GoHighLevel keeps the old and
+  new tokens working for a 7-day window, so you can rotate without downtime.
+- Never commit the token. It belongs in Cloudflare's secret store, not in the repository — the
+  repository is public.
+- Grant only Contacts write and read. If the token leaks, that is the entire blast radius.

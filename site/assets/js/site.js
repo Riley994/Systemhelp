@@ -92,16 +92,31 @@
     });
 
     // payment buttons: use the Stripe link when it exists, otherwise the enquiry form
+    // Payment buttons: swap in the Stripe link when one exists. With no link the
+    // button keeps the href the page gave it — for the diagnostic session that is
+    // the calendar, so a button that says "book" always ends at a booking.
+    // Rewriting it to the enquiry form is what made two buttons point at each
+    // other: press book, land on a form asking you to book.
     $$("[data-pay]").forEach(function (el) {
       var key = el.getAttribute("data-pay");
       var url = (CFG.payments || {})[key];
-      var product = el.getAttribute("data-pay-name") || key;
       if (url) {
         el.setAttribute("href", url);
+        el.setAttribute("data-pay-live", "true");
       } else {
-        el.setAttribute("href", "/contact-page/?interest=" + encodeURIComponent(product) + "#enquiry");
-        el.setAttribute("data-pay-fallback", "true");
+        el.setAttribute("data-pay-pending", "true");
       }
+    });
+
+    // The line under a payment button has to match reality: with no checkout
+    // there is nothing for "VAT added at checkout" to describe.
+    var hasCheckout = Object.keys(CFG.payments || {}).some(function (k) {
+      return (CFG.payments || {})[k];
+    });
+    $$("[data-pay-note]").forEach(function (el) {
+      el.textContent = hasCheckout
+        ? "Payment by card or invoice. VAT added at checkout."
+        : "We confirm the time first, then invoice. VAT added.";
     });
 
     // enquiry form prefill from ?interest=
@@ -316,9 +331,20 @@
         // calendar's own storage — Safari by default, and some privacy settings —
         // would otherwise leave the visitor with no way to ask for a time.
         slot.setAttribute("data-booking-embedded", "true");
-        if (linkEl) linkEl.hidden = true;
-      } else if (link && linkEl) {
-        linkEl.setAttribute("href", link);
+        // Keep a way through even when the frame paints nothing: Safari blocks
+        // the calendar's third-party storage by default and leaves an empty box,
+        // so the link out to the calendar stays visible as the guaranteed route.
+        if (linkEl) {
+          linkEl.setAttribute("href", link || url);
+          linkEl.hidden = false;
+        }
+      } else if (linkEl) {
+        if (link) {
+          linkEl.setAttribute("href", link);
+          linkEl.hidden = false;
+        } else {
+          linkEl.hidden = true;
+        }
       }
     });
   }

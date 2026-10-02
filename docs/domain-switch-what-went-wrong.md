@@ -173,3 +173,59 @@ After Fix 2, this should return the new site:
 ```sh
 curl -sI https://systemhelp.co.uk | head -1
 ```
+
+---
+
+# Update, 2 October 12:51 — everything is done except one record
+
+Re-checked live after the Worker custom domains were attached. Marked against the two fixes above.
+
+| Job | State |
+| --- | --- |
+| Custom domains on the Worker | **Done** — `systemhelp.co.uk` and `www.systemhelp.co.uk`, both Production |
+| Old `A` records deleted | **Done** — the apex no longer resolves to `3.33.251.168` / `15.197.225.128` |
+| Old `www` CNAME deleted | **Done** — no longer points at `d2zh1mbb6w7igb.cloudfront.net` |
+| Cloudflare serving the site | **Done** — apex and `www` both answer `172.67.186.191`, `104.21.36.61` |
+| Mail and identity records | **Untouched and correct** — now all `cf-proxied:false` (DNS only) |
+| **DS records at the registry** | **NOT DONE — this is the only thing still broken** |
+
+## The DS records are still the old provider's
+
+The zone **is** signed by Cloudflare. It publishes two keys:
+
+```
+flags=256  algorithm=13  key tag 29253   (ZSK)
+flags=257  algorithm=13  key tag 33447   (KSK / SEP)   <- the DS must point at this
+```
+
+The registry still holds:
+
+```
+key tag 33789   algorithm 13   digest type 2     <- not ours
+key tag 51860   algorithm 13   digest type 2     <- not ours
+```
+
+Neither matches 33447. That is the whole of the remaining fault, and it is why
+`dig systemhelp.co.uk` returns `SERVFAIL` while `dig +cd systemhelp.co.uk` returns the correct
+Cloudflare addresses. The records are right; the signature chain is not.
+
+**Do this:** Cloudflare → `systemhelp.co.uk` zone → **DNS → Settings → DNSSEC**. It will show you
+the DS record it expects you to publish — **key tag 33447, algorithm 13, digest type 2**, plus a
+long digest string. Copy that. Then **GoDaddy → your domain → DNSSEC**: delete the two records
+tagged 33789 and 51860, and add Cloudflare's. The DS TTL is 10 seconds, so it takes effect almost
+at once.
+
+If you would rather not run DNSSEC at all, just delete both DS records and stop there. Resolution
+returns just as quickly.
+
+## The edge certificate is not issued yet
+
+Connecting directly to Cloudflare's edge on `172.67.186.191` with SNI `systemhelp.co.uk` currently
+fails the handshake — alert 40, no certificate presented. The certificate for the two custom
+domains has not been provisioned yet. That is expected this soon after attaching them, and it
+should resolve itself once the domain actually resolves. If it has not appeared about 30 minutes
+after the DS records are cleared, look at **SSL/TLS → Edge Certificates**.
+
+One note on the SSL mode I mentioned earlier: for a Worker custom domain it is moot. There is no
+origin to encrypt to — Cloudflare terminates the connection and runs the Worker. Set it to
+**Full (strict)** anyway, so that anything you proxy later is not left on Flexible.

@@ -22,6 +22,22 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // A probe that never touches the assets binding, so the Worker can be
+    // checked on its own. If this answers with JSON, the script is running. If
+    // the whole hostname answers "error code: 1042", the code never ran and the
+    // fault is in the hostname or route configuration, not in this file.
+    if (url.pathname === "/api/health") {
+      return new Response(
+        JSON.stringify({ ok: true, service: "team-iq", runtime: "worker", time: new Date().toISOString() }),
+        {
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store"
+          }
+        }
+      );
+    }
+
     if (url.pathname === "/api/lead") {
       if (request.method === "OPTIONS") return onRequestOptions();
       if (request.method !== "POST") {

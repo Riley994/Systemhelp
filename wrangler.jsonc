@@ -48,6 +48,21 @@
   //   { "pattern": "systemhelp.co.uk",     "custom_domain": true },
   //   { "pattern": "www.systemhelp.co.uk", "custom_domain": true }
   // ],
+  // --------------------------------------------------------------------------
+  // HOSTNAMES
+  // Declared explicitly so that a change made in the dashboard cannot leave the
+  // Worker in a combination that fails before the script runs. Error 1042
+  // ("Worker tried to fetch from another Worker on the same zone") is returned
+  // for every path, before any code executes, when preview URLs are on and
+  // workers.dev is off — a known Workers bug — and also when the same hostname
+  // is claimed twice, once as a custom domain and once as a route pattern.
+  //
+  // Leave both lines as they are, and attach the domain in ONE place only:
+  // either the dashboard's Domains & Routes, or the routes block above, not
+  // both.
+  // --------------------------------------------------------------------------
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": {
     "enabled": true
   }

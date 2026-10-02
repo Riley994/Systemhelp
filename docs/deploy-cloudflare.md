@@ -181,3 +181,66 @@ Nothing else in the repository needs to change when the domain moves.
 | Form submits, then nothing arrives | Environment variables not set, or set only for Preview | Add them for **Production** and redeploy |
 | `/api/lead` returns HTML instead of JSON | The request never reached the Worker | Confirm `run_worker_first` contains `"/api/*"` in `wrangler.jsonc` |
 | Two Workers appear in the dashboard | The `"name"` in `wrangler.jsonc` differs from the project name | Rename one so they match, then delete the stray Worker |
+
+## Error 1042 on every path
+
+**Symptom.** Every request — pages, stylesheets, even the API — returns a 17-byte `text/plain`
+body reading `error code: 1042`, and the Worker's own code never runs.
+
+**What it means.** 1042 is *"Worker tried to fetch from another Worker on the same zone"*. It is
+raised before your script executes, so it is always a configuration problem, never a bug in
+`worker/index.js`. There are two known causes:
+
+1. **A Workers bug.** When preview URLs are enabled and `workers.dev` is disabled, the platform
+   returns 1042 pre-execution for every path on the Worker. Fix: declare the hostnames explicitly
+   in `wrangler.jsonc` and redeploy.
+
+   ```jsonc
+   "workers_dev": true,
+   "preview_urls": false,
+   ```
+
+2. **The same hostname claimed twice.** `systemhelp.co.uk` attached as a *Custom Domain* in the
+   dashboard **and** covered by a *route pattern* such as `systemhelp.co.uk/*` — including the
+   `routes` block in `wrangler.jsonc` if it has been uncommented. Two claims on one hostname
+   conflict. Open **Workers & Pages → systemhelp → Settings → Domains & Routes** and keep one.
+
+**How to tell which one you have.** The health probe never touches the assets binding, so it
+isolates the two:
+
+```sh
+curl -s https://systemhelp.riley-2e2.workers.dev/api/health
+```
+
+- JSON back (`{"ok":true,...}`) — the Worker is running and the fault is in static file serving.
+- `error code: 1042` — the Worker never started. It is a hostname or route configuration problem:
+  work through the two causes above.
+
+**Pages is the fallback.** If you would rather not fight the Worker configuration, the same
+repository runs on Cloudflare Pages unchanged — see the next section.
+
+## Running the same site on Cloudflare Pages instead
+
+Nothing in the code is Worker-specific. The repository already carries what Pages needs:
+`functions/api/lead.js` is a Pages Function, and `site/_headers` and `site/_redirects` are Pages
+features.
+
+1. **Workers & Pages → Create → Pages → Connect to Git**, pick `Riley994/Systemhelp`.
+2. Build command: leave empty (or `true`). Build output directory: `site`.
+3. Environment variables, in the Pages project this time: `GHL_TOKEN`, `GHL_LOCATION_ID`,
+   `RESEND_API_KEY` — the same names and values as the Worker.
+4. **Custom domains → Set up a domain** → `systemhelp.co.uk`, then `www.systemhelp.co.uk`.
+
+Which to choose:
+
+| | Workers | Pages |
+| --- | --- | --- |
+| Static site + one API endpoint | Yes | Yes |
+| Config lives in the repository | `wrangler.jsonc` | Dashboard only |
+| Custom domains | Domains & Routes | Custom domains tab |
+| `_headers` / `_redirects` | Supported | Native |
+| Failure mode seen here | Route/hostname conflicts (1042) | None equivalent |
+| Platform direction | Where Cloudflare is investing | Maintained, not the focus |
+
+Both are free at this traffic level. Workers is the platform Cloudflare is actively developing;
+Pages is the simpler mental model with fewer moving parts. Either serves this site identically.

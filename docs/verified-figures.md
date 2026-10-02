@@ -13,8 +13,14 @@ available, not from summaries.
 *Science* **330**(6004), 686–688. DOI 10.1126/science.1193147.
 https://www.science.org/doi/10.1126/science.1193147
 
-**Design.** Two studies, **699 people, working in groups of two to five** (not 700; not a
-two-year study — the evidence register said both, and both were wrong).
+**Design.** Two studies. Study 1 ran 40 groups; Study 2 ran 152 groups — 192 groups in total.
+**699 people**, working in groups of two to five. The figure of 700 in the evidence register is
+a rounding, not an error.
+
+**Timeline.** The paper was received 5 April 2010, accepted 13 September 2010, and published
+29 October 2010. It states no study duration. The research programme predates submission, so
+describing it as several years of work is a reasonable inference from the timeline rather than
+a citation error. Do not assert a specific number of years as though the paper had given one.
 
 **The finding.** A general collective-intelligence factor ("c") that explains a group's
 performance across a wide variety of tasks. One factor with an initial eigenvalue accounting
@@ -53,6 +59,12 @@ https://rework.withgoogle.com/guides/understanding-team-effectiveness
 **Five dynamics** distinguish effective teams: psychological safety, dependability, structure
 and clarity, meaning, and impact. Psychological safety was the most important. Research ran
 from 2011 for about four years.
+
+**Design.** Project Aristotle studied **180 teams** — 115 project teams in engineering and 65
+pods in sales — ranging from **three to fifty individuals**, deliberately mixing high and low
+performers, and measured effectiveness four ways. The guide states no duration; the site's
+"four years" is a reasonable inference from a 2011 start to the 2015–16 publication of the
+findings, not a claim the guide makes.
 
 **The caveat worth quoting** — Google's own guide says that the variables which were not
 significant in their study may matter elsewhere: *"while these variables did not significantly
@@ -122,3 +134,27 @@ of people, more than 50 teams, 30 companies.
 Recorded, unresolved, and labelled as such in the book's reference list: Inner Circle (the year
 is unconfirmed and the publisher's page returned no content), Scrum Inc.'s 47% figure, the
 Cynefin video, Snowden's Harvard paper, and the Moltke and Tyson quotations.
+
+---
+
+## Where precision is required, and where it is pedantry
+
+Worth flagging, because a reader can open the source and find a contradiction:
+
+- A figure that does not appear in the cited source (the 2.63 and 4.89).
+- A comparison between measures that cannot be compared (a money range divided by a score range).
+- A finding stated more strongly than the source states it (a headline zero standing in for
+  "not strongly correlated").
+- A first-party observation presented as though it were a published finding.
+
+Not worth flagging, and not worth correcting in the copy:
+
+- An imprecise duration where the programme's own timeline supports it — "several years" for
+  research submitted in 2010, "four years" for research begun in 2011 and published in 2015–16.
+- Rounding, such as 700 for 699.
+- A figure expressed the way the authors themselves express it.
+
+The test: if an analyst opened the source, would they find a contradiction, or would they find
+that the source simply does not specify the point? The first is an error. The second is an
+inference, and inferences are allowed. Applying the second test to the first category is how
+copy gets weakened for no reason.

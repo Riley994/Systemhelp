@@ -74,7 +74,16 @@ starts with `_` is not routed.
 ```sh
 # 1. Is the Function layer live?
 curl -s https://systemhelp.pages.dev/api/health
-# → {"ok":true,"service":"team-iq","runtime":"pages","time":"..."}
+# → {"ok":true,"service":"team-iq","runtime":"pages","time":"...",
+#    "config":{"ghlToken":true,"ghlLocationId":true,"webhook":false,"email":false}}
+#
+# The config block reports presence only, never a value, so it is safe to share. It separates the
+# two failures that otherwise look identical:
+#   ghlToken: false  this deployment cannot see the variable at all — it was never set, or it was
+#                    set after this deployment was built and no new one has run since. A submission
+#                    answers "skipped".
+#   ghlToken: true   the variable is there, so a "failed_401" on submission points at the token or
+#                    its scope, not at the deployment.
 
 # 2. Does a form submission travel all the way to GoHighLevel?
 curl -s -X POST https://systemhelp.pages.dev/api/lead \

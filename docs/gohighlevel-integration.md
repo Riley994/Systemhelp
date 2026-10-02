@@ -184,6 +184,29 @@ The website's field names are `score`, `weakestPillar`, `pillarScores`, `company
 `teamSize`, `interest`, `message`. Anything you map is sent as a custom field as well as appearing
 in the note.
 
+## The email safety net (Resend)
+
+Add `RESEND_API_KEY` and every lead is emailed to you at the same moment it reaches GoHighLevel.
+Two independent destinations: if one breaks, the other still carries the enquiry, so a broken
+integration becomes a duplicate rather than a lost lead.
+
+1. Create an account at [resend.com](https://resend.com). The free tier covers 3,000 emails a month.
+2. **Domains → Add domain → `systemhelp.co.uk`**, then add the DNS records it shows in Cloudflare.
+   Resend sends from a subdomain (`send.systemhelp.co.uk`), so this does **not** touch the MX records
+   that deliver your own mail. Do not change those.
+3. Wait until the domain reads **Verified** — sends from an unverified domain are refused.
+4. **API Keys → Create API key** with sending permission, and copy the `re_…` value. It is shown once.
+5. In Cloudflare, add it as `RESEND_API_KEY` (Secret), under **Production and Preview**, then
+   **Deployments → Retry deployment**.
+
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `RESEND_API_KEY` | — | absent means no email is sent |
+| `LEAD_NOTIFY_EMAIL` | `andrew@systemhelp.co.uk` | one address, or several separated by commas |
+| `LEAD_FROM_EMAIL` | `website@systemhelp.co.uk` | must sit on the domain verified in Resend |
+
+If the domain is not verified the send is refused and the response reports `"email":"failed_403"`.
+
 ## The alternative — inbound webhook instead of a token
 
 If you would rather not hold a token at all, set `CRM_WEBHOOK_URL` to a GoHighLevel inbound webhook
@@ -207,7 +230,15 @@ Nothing is lost quietly. If a lead reaches no destination at all, the server log
 ```
 
 - **Cloudflare:** Workers & Pages → systemhelp → Logs (live tail), or **Observability** for history
-- **Locally:** the terminal running `node server/server.mjs`
+ - **Locally:** the terminal running `node server/server.mjs`
+
+Two answers mean the submission was deliberately ignored rather than delivered. Both are logged with
+the reason, so the log says which trap fired:
+
+- `{"ok":true,"note":"ignored_fast"}` — completed in under two seconds, measured from the moment the
+  form appeared (`startedAt`), not from the submit.
+- `{"ok":true,"note":"ignored_honeypot"}` — the hidden trap field was filled, which a browser
+  password manager can do on autofill.
 
 A wrong or expired token logs `[lead] GoHighLevel rejected the token — check GHL_TOKEN and its
 scopes`. Set `RESEND_API_KEY` as well and you also get an email for every lead, so a broken

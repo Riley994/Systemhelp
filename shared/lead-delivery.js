@@ -57,6 +57,16 @@ export function splitName(full) {
   return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
 }
 
+/* GoHighLevel stores phone numbers in E.164. A UK number typed the national way —
+   "07388 878732" — was read as a US number and saved as "+107388878732", which
+   breaks click-to-call and SMS from the contact record. Normalise before sending. */
+export function phoneForGhl(raw) {
+  const digits = String(raw || "").replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) return digits;                       // already international
+  if (/^0\d{9,10}$/.test(digits)) return "+44" + digits.slice(1);  // UK national format
+  return digits;
+}
+
 /* Mirrors the bands in site/assets/js/scorecard.js. Keep the two in step:
    0-39 Reactive, 40-59 Emerging, 60-74 Developing, 75-89 Strong, 90-100 Exemplary. */
 export function bandFor(score) {
@@ -162,7 +172,7 @@ export async function deliverToGoHighLevel(lead, env = {}) {
       name: lead.name,
       email: lead.email,
       source: `systemhelp.co.uk — ${lead.form || "enquiry"}`,
-      ...(lead.phone ? { phone: lead.phone } : {}),
+      ...(lead.phone ? { phone: phoneForGhl(lead.phone) } : {}),
       ...(lead.company ? { companyName: lead.company } : {}),
       ...(customFieldsFor(lead, env).length ? { customFields: customFieldsFor(lead, env) } : {})
     });

@@ -226,7 +226,11 @@ async function deliverToWebhook(lead, env) {
 
 async function deliverEmail(lead, env) {
   if (!env.RESEND_API_KEY) return "skipped";
-  const to = env.LEAD_NOTIFY_EMAIL || "andrew@systemhelp.co.uk";
+  // comma-separated, so one lead can reach several inboxes
+  const to = (env.LEAD_NOTIFY_EMAIL || "andrew@systemhelp.co.uk")
+    .split(",")
+    .map((address) => address.trim())
+    .filter(Boolean);
   const from = env.LEAD_FROM_EMAIL || "website@systemhelp.co.uk";
   const lines = Object.entries(lead)
     .filter(([, v]) => v)
@@ -241,7 +245,7 @@ async function deliverEmail(lead, env) {
       },
       body: JSON.stringify({
         from: `TEAM IQ website <${from}>`,
-        to: [to],
+        to: to,
         reply_to: lead.email,
         subject: `New ${lead.form} lead: ${lead.name}${lead.company ? " — " + lead.company : ""}`,
         text: lines

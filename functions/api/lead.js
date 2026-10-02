@@ -46,14 +46,22 @@ export async function onRequestPost({ request, env }) {
   }
 
   // bot traps: a filled honeypot, or a form completed impossibly fast
-  if (clean(data.website)) return json({ ok: true, note: "ignored" });
-  const submittedAt = Date.parse(data.submittedAt || "");
-  // Only a small *non-negative* elapsed time is a trap. A timestamp in the
+  if (clean(data.website)) {
+    console.warn("[lead] dropped: honeypot filled");
+    return json({ ok: true, note: "ignored_honeypot" });
+  }
+  // Measure from when the form appeared, NOT from submittedAt: the browser
+  // stamps submittedAt as the form is sent, so elapsed is always the network
+  // round trip and every real visitor would be judged a bot. That mistake
+  // silently discarded live enquiries, so the two are kept separate.
+  // Only a small *non-negative* elapsed time is a trap: a timestamp in the
   // future means the visitor's clock is ahead, not that a bot filled the form,
   // and silently dropping a real lead is far worse than letting one bot in.
-  const elapsed = Date.now() - submittedAt;
-  if (Number.isFinite(submittedAt) && elapsed >= 0 && elapsed < 2000) {
-    return json({ ok: true, note: "ignored" });
+  const startedAt = Date.parse(data.startedAt || "");
+  const elapsed = Date.now() - startedAt;
+  if (Number.isFinite(startedAt) && elapsed >= 0 && elapsed < 2000) {
+    console.warn("[lead] dropped: completed in " + elapsed + "ms");
+    return json({ ok: true, note: "ignored_fast" });
   }
 
   const lead = {

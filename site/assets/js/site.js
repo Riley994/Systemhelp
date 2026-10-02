@@ -198,9 +198,10 @@
 
         // spam checks
         var honey = $("input[name=website]", form);
-        var elapsed = (Date.now() - started) / 1000;
         if (honey && honey.value) return finish(form);           // bot filled the trap
-        if (elapsed < 2.5) return finish(form);                  // impossibly fast
+        // "Impossibly fast" is judged by the server, from startedAt below. Doing
+        // it here too meant a visitor whose browser autofilled the form could be
+        // dropped without the request even leaving the page.
 
         var payload = {};
         new FormData(form).forEach(function (value, key) {
@@ -208,6 +209,9 @@
         });
         payload.page = window.location.pathname;
         payload.submittedAt = new Date().toISOString();
+        // when the form was rendered, not when it was sent: the server judges
+        // "impossibly fast" against this, and the submit time is always ~now
+        payload.startedAt = new Date(started).toISOString();
 
         if (status) { status.hidden = false; status.className = "form__status alert alert--info"; status.textContent = "Sending…"; }
         if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); }

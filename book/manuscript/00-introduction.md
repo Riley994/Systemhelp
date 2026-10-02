@@ -45,6 +45,12 @@ The second is Google's own study, begun in 2011 and running for about four years
 
 Neither study gives you a method. MIT establishes that the property exists and can be measured. Google shows which conditions make it visible. What to do about it, week by week, is the gap this book fills — and the six-pillar model in it is ours, not theirs. The research is the reason to take the subject seriously. The model is the reason you can act on it.
 
+### What we have seen for ourselves
+
+Not every figure in this book comes from a study. In delivery work at a large UK financial services organisation, a programme we were part of saw rework fall by around 47% and the time taken to reach a decision fall by around 60%.
+
+We include it because it is the closest thing we have to a before-and-after from our own practice, and we mark it for what it is: an observation from one organisation, on one programme, in work we were part of. It is not a benchmark, it is not a controlled measurement, and it is not a promise about your team. The organisation is not named, and there is no published result to point you at. Take it as a reason to run the measurement yourself, which the rest of this book shows you how to do.
+
 ### Why artificial intelligence makes this more urgent
 
 Artificial intelligence is the most useful tool to arrive in delivery work for a generation. It is also, in the wrong place, a multiplier of the wrong thing.

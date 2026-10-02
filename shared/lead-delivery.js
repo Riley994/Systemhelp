@@ -261,7 +261,18 @@ async function deliverEmail(lead, env) {
         text: lines
       })
     });
-    return res.ok ? "sent" : "failed_" + res.status;
+    if (res.ok) return "sent";
+    // A bare status code ("failed_403") sends you hunting. Resend explains
+    // itself in the body — usually that the sending domain is not verified —
+    // so keep a short version of it alongside the code.
+    let reason = "";
+    try {
+      const body = await res.json();
+      reason = body?.message || body?.error?.message || body?.error || "";
+    } catch {
+      /* a body that will not parse is not worth failing over */
+    }
+    return "failed_" + res.status + (reason ? ": " + String(reason).slice(0, 140) : "");
   } catch {
     return "error";
   }

@@ -617,3 +617,10 @@ textarea { min-height: 130px; resize: vertical; }
 /* The frame is white until GoHighLevel's widget paints, so the slot says what
    is loading rather than showing an empty box on the page that must convert. */
 .booking-slot__loading { padding: 34px 0 12px; color: var(--body); font-size: .9375rem; }
+/* Height is set here rather than by GoHighLevel's helper script: that script
+   hides the frame off-screen until it decides to reveal it, and on this page it
+   never did — the calendar was rendered and invisible. 1000px shows the whole
+   month grid on a desktop width; the frame scrolls internally for the later
+   steps. */
+.booking-slot iframe { height: 1000px; }
+@media (max-width: 780px) { .booking-slot iframe { height: 1250px; } }

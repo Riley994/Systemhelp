@@ -321,23 +321,29 @@
         embed.innerHTML =
           '<p class="booking-slot__loading">Loading the calendar…</p>' +
           '<iframe src="' + url + '" title="Choose a time for your TEAM IQ session" ' +
-          'scrolling="no" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+          'scrolling="auto" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
         var frame = $("iframe", embed);
         if (frame) {
           frame.addEventListener("load", function () {
             var note = $(".booking-slot__loading", embed);
             if (note) note.remove();
+            // Never let the calendar be hidden. GoHighLevel's form_embed.js runs
+            // in OUR document and parks the frame off-screen at opacity 0 /
+            // visibility hidden until it decides to reveal it — in this page it
+            // did not, so the calendar was invisible while its content sat there
+            // fully rendered. We size the frame ourselves instead, and clear any
+            // hiding style that turns up.
+            frame.style.visibility = "";
+            frame.style.opacity = "";
+            frame.style.left = "";
+            frame.style.pointerEvents = "";
           });
-        }
-        // GoHighLevel's own widget script resizes the frame to fit the calendar.
-        // Without it the frame stays at the fixed minimum height and clips the
-        // later steps of the booking flow.
-        if (!$("#ghl-embed-helper")) {
-          var helper = document.createElement("script");
-          helper.id = "ghl-embed-helper";
-          helper.src = "https://link.msgsndr.com/js/form_embed.js";
-          helper.async = true;
-          document.body.appendChild(helper);
+          // The frame can finish loading before this listener is attached, so
+          // clear the line on a timer as well. The widget shows its own spinner.
+          window.setTimeout(function () {
+            var note = $(".booking-slot__loading", embed);
+            if (note) note.remove();
+          }, 4000);
         }
         // The email route stays on the page, demoted. A browser that blocks the
         // calendar's own storage — Safari by default, and some privacy settings —

@@ -50,6 +50,9 @@ Neither study gives you a method. MIT establishes that the property exists and c
 Not every figure in this book comes from a study. In delivery work at a large UK financial services organisation, a programme we were part of saw rework fall by around 47% and the time taken to reach a decision fall by around 60%.
 
 We include it because it is the closest thing we have to a before-and-after from our own practice, and we mark it for what it is: an observation from one organisation, on one programme, in work we were part of. It is not a benchmark, it is not a controlled measurement, and it is not a promise about your team. The organisation is not named, and there is no published result to point you at. Take it as a reason to run the measurement yourself, which the rest of this book shows you how to do.
+One thing should be said plainly, because it is usually left out. The collective-intelligence finding is contested. It has been replicated — a 2021 meta-analysis in *PNAS* covering 22 studies, 5,279 people in 1,356 groups found strong support for a general factor, and found that the group's collaboration process mattered more than the average skill of its members — and it has been challenged. A 2017 study in *Intelligence* found that individual IQ accounted for around 80% of the variance in group performance, and a 2024 study in *PLOS ONE* failed to replicate the three predictors.
+
+What is settled is the operational point: some teams reliably outperform what their members' averages would predict. What is still argued about is the precise instrument. Our claim is the narrow one, and it does not depend on that argument being resolved: inspect the conditions, measure them, and see whether the number moves.
 
 ### Why artificial intelligence makes this more urgent
 

@@ -100,6 +100,11 @@
     $$("[data-pay]").forEach(function (el) {
       var key = el.getAttribute("data-pay");
       var url = (CFG.payments || {})[key];
+      // The label follows the wiring, so the button never promises the wrong
+      // thing: "book" while the fee is invoiced after the session, "pay and
+      // book" the moment a checkout URL is added to config.js.
+      var label = el.getAttribute(url ? "data-pay-label-live" : "data-pay-label-pending");
+      if (label) el.textContent = label;
       if (url) {
         el.setAttribute("href", url);
         el.setAttribute("data-pay-live", "true");
@@ -115,7 +120,7 @@
     });
     $$("[data-pay-note]").forEach(function (el) {
       el.textContent = hasCheckout
-        ? "Payment by card or invoice. VAT added at checkout."
+        ? "Pay by card, or ask us to invoice."
         : "We confirm the time first, then invoice. VAT added.";
     });
 
